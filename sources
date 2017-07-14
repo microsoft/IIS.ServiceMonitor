@@ -1,0 +1,53 @@
+#
+# Use the static library for crt. Needs to be before sources.all so
+# USE_MSVCRT doesn't get defined
+#
+
+!INCLUDE $(INETROOT)\build\paths.all
+!INCLUDE $(INETROOT)\build\sources.all
+
+USE_STL=1
+USE_LIBCMT=1
+USE_NATIVE_EH=1
+UNICODE=1
+
+TARGETNAME=servicemonitor
+TARGETTYPE=PROGRAM
+UMTYPE=console
+UMENTRY=wmain
+MINORCOMP =servicemonitor
+
+DO_LSBUILD = 1
+
+LSBUILD_FLAGS_WARNING = /w 4
+
+SOURCES=   \
+        ServiceMonitor.rc        \
+        main.cpp                 \
+        IISConfigUtil.cpp        \
+        ServiceMonitor.cpp       \
+
+C_DEFINES=  $(C_DEFINES) -DUNICODE -D_UNICODE -DATL_NO_LEAN_AND_MEAN  
+
+TARGETLIBS=$(TARGETLIBS)                 \
+        $(SDK_LIB_PATH)\kernel32.lib     \
+        $(SDK_LIB_PATH)\user32.lib       \
+        $(SDK_LIB_PATH)\gdi32.lib        \
+        $(SDK_LIB_PATH)\winspool.lib     \
+        $(SDK_LIB_PATH)\comdlg32.lib     \
+        $(SDK_LIB_PATH)\advapi32.lib     \
+        $(SDK_LIB_PATH)\ole32.lib        \
+        $(SDK_LIB_PATH)\oleaut32.lib     \
+        $(SDK_LIB_PATH)\shell32.lib      \
+        $(SDK_LIB_PATH)\uuid.lib         \
+        $(SDK_LIB_PATH)\odbc32.lib       \
+        $(SDK_LIB_PATH)\odbccp32.lib     \
+
+INCLUDES=   \
+        ..\public\win8\inc;                     \
+        $(INETROOT)\projects\common\include;    \
+        $(INCLUDES);                            \
+        ..\..\idl\$(O);                         \
+
+DLOAD_ERROR_HANDLER=kernel32
+TARGET_DESTINATION=retail

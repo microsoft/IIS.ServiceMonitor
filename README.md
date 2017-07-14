@@ -12,3 +12,27 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+# ServiceMonitor
+
+ServiceMonitor service the purpose as the foreground process when runnin IIS in container. It monitors the w3svc service, when the service state is changes from SERVICE_RUNNING to SERVICE_STOPPED | SERVICE_STOP_PENDING | SERVICE_PAUSED | SERVICE_PAUSE_PENDING. ServiceMonitor will exit. As a result, the container will exit.
+
+## Add Envirormental Variables to ApplicationHost.config
+
+ServiceMonitor will also iterate through the envirormental variable and add them to ApplicationHost.config using appcmd one by one. ServiceMonitor also define of a a set of environment variables that should not be added to ApplicationHost.config. First, try to lookup for the name. If the name is in the list, try to look for it's value, only filter environment variables out when both name and value match or name matches with NULL value. 
+
+### Environment Variables to be Filter out
+
+[a,b]
+[d,e]
+[f,NULL]
+...
+
+## How to build
+
+.\build.cmd
+
+
+## How to Run.
+.\ServiceMonitor.exe [ServiceName]
+eg. .\ServiceMonitor.exe w3svc
