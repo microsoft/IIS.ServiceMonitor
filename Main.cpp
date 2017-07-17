@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 #include"stdafx.h"
 
 HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;

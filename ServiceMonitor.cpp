@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 // ServiceMonitor.cpp : Defines the entry point for the console application.
 //
 #include"stdafx.h"

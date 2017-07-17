@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 #
 # Use the static library for crt. Needs to be before sources.all so
 # USE_MSVCRT doesn't get defined
