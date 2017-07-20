@@ -1,0 +1,12 @@
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <MicroBuildVersion>0.2.0</MicroBuildVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(SignType)' != ''">
+    <FilesToSign Include="$(FilesToSign);$(OutDir)\$(TargetFileName)">
+      <Authenticode>$(SigningIdentity)</Authenticode>
+    </FilesToSign>
+  </ItemGroup>
+</Project>
