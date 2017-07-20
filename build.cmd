@@ -1,1 +1,1 @@
-msbuild ServiceMonitor.vcxproj
+msbuild ServiceMonitor.sln /p:platform=x64 /p:configuration=Release
