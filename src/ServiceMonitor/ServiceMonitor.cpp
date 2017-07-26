@@ -113,7 +113,7 @@ HRESULT Service_Monitor::StartServiceByName(LPCTSTR pServiceName, DWORD dwTimeOu
     }
     else
     {
-        _tprintf(L"\nERROR: Failed to start or quesry status of service '%s' error [%x]\n", pServiceName, hr);
+        _tprintf(L"\nERROR: Failed to start or query status of service '%s' error [%x]\n", pServiceName, hr);
     }
 
     if (hService != NULL)
@@ -211,7 +211,7 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
         }
         else
         {
-            _tprintf(L"\nERROR: Failed to stop or quesry status of service '%s' error [%x]\n", pServiceName, hr);
+            _tprintf(L"\nERROR: Failed to stop or query status of service '%s' error [%x]\n", pServiceName, hr);
         }
 
         if (hService != NULL)
