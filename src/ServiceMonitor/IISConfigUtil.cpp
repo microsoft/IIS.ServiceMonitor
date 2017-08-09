@@ -163,55 +163,28 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet
 	}
 	pstr->append(L" /commit:apphost");
 	*pStrCmd = pstr;
+
+	///////////////////////DEBUG//////////////////////////////
 	wcout << *pstr << endl;
 	wcout << endl;
 	wcout << endl;
-	wcout << endl;
-	wcout << endl;
-	wcout << endl;
-	wcout << endl;
-	wcout << endl;
-	wcout << endl;
-	/*
-    //
-    // Do not use the try-catch pattern
-    // if exception was thrown, just let the process crash
-    //
-    pstr->append(m_pstrSysDirPath);
-    if (fAddCommand)
-    {
-        //use + sign to add the environment variable
-        pstr->append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools /+\"[name='");
-    }
-    else
-    {
-        //use - sign to remove the environment variable
-        pstr->append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools /-\"[name='");
-    }
-    pstr->append(pstrAppPoolName);
-    pstr->append(L"'].environmentVariables.[name='");
-    pstr->append(strEnvName);
-    if (fAddCommand)
-    {
-        pstr->append(L"',value='");
-        pstr->append(strEnvValue);
-    }
-    pstr->append(L"']\" /commit:apphost");
-    
-	*pStrCmd = pstr;
-	*/
+	///////////////////////DEBUG//////////////////////////////
 
 Finished:
     return hr;
 }
 
 
-HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd)
+HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd, BOOL fIgnoreError)
 {
     HRESULT     hr       = S_OK;
     STARTUPINFO si       = { sizeof(STARTUPINFO) };
     DWORD       dwStatus = 0;
     PROCESS_INFORMATION pi;
+
+	ZeroMemory(&si, sizeof(STARTUPINFO));
+	si.cb = sizeof(STARTUPINFO);
+	si.dwFlags |= STARTF_USESTDHANDLES;
 
     if (!CreateProcess(NULL,
         (LPWSTR)pstrCmd->c_str(),
@@ -230,7 +203,7 @@ HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd)
 
 	// wait for at most 5 seconds to allow APPCMD finish
 	WaitForSingleObject(pi.hProcess, 5000);
-    if (!GetExitCodeProcess(pi.hProcess, &dwStatus) || dwStatus != 0)
+    if ((!GetExitCodeProcess(pi.hProcess, &dwStatus) || dwStatus != 0) && (!fIgnoreError))
     {
         //
         // appcmd command failed
@@ -299,34 +272,9 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
 			pStrTempValue->append(pstrValue);
 
 			envSet.insert(KV_WSTR(*pStrTempName, *pStrTempValue));
-			/*
-			hr = BuildAppCmdCommand(pstrName, pstrValue, pstrAppPoolName, &pstrAddCmd, TRUE);
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
-
-            hr = BuildAppCmdCommand(pstrName, pstrValue, pstrAppPoolName, &pstrRmCmd, FALSE);
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
-			*/
             
             pEqualChar[0] = L'=';
 
-			/*
-            //allow appcmd to fail if it is trying to remove environment variable
-            RunCommand(pstrRmCmd);
-
-            //appcmd must success when add new environment variable
-            hr = RunCommand(pstrAddCmd);
-
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
-			*/
 		}
         //
         // move to next environment variable
@@ -347,10 +295,9 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
 	}
 
 	//allow appcmd to fail if it is trying to remove environment variable
-	RunCommand(pstrRmCmd);
-	
+	RunCommand(pstrRmCmd, TRUE);
 	//appcmd must success when add new environment variable
-	hr = RunCommand(pstrAddCmd);
+	hr = RunCommand(pstrAddCmd, FALSE);
 
 	if (FAILED(hr))
 	{
