@@ -6,6 +6,7 @@
 using namespace std;
 
 #define KV(a,b) pair<wstring, LPTSTR>(a,b)
+#define KV_WSTR(a,b) pair<wstring, wstring>(a,b)
 #define POPULATE(map) do                          \
                     {                             \
                         map.insert(KV(L"TMP",                     L"C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp")); \
@@ -120,7 +121,7 @@ Finished:
     return hr;
 }
 
-HRESULT IISConfigUtil::BuildAppCmdCommand(WCHAR*  strEnvName, WCHAR* strEnvValue, WCHAR* pstrAppPoolName, wstring** pStrCmd, BOOL fAddCommand)
+HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet, WCHAR* pstrAppPoolName, wstring** pStrCmd, BOOL fAddCommand)
 {
     HRESULT hr = S_OK;
 
@@ -134,6 +135,44 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(WCHAR*  strEnvName, WCHAR* strEnvValue
         hr = ERROR_OUTOFMEMORY;
         goto Finished;
     }
+	pstr->append(m_pstrSysDirPath);
+	pstr->append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools ");
+
+	for (auto it = envSet.begin(); it != envSet.end(); ++it)
+	{
+		wstring strEnvName = it->first;
+		wstring strEnvValue = it->second;
+		if (fAddCommand)
+		{
+			pstr->append(L"/+\"[name='");
+		}
+		else
+		{
+			pstr->append(L"/-\"[name='");
+
+		}
+		pstr->append(pstrAppPoolName);
+		pstr->append(L"'].environmentVariables.[name='");
+		pstr->append(strEnvName);
+		if (fAddCommand)
+		{
+			pstr->append(L"',value='");
+			pstr->append(strEnvValue);
+		}
+		pstr->append(L"']\" ");
+	}
+	pstr->append(L" /commit:apphost");
+	*pStrCmd = pstr;
+	wcout << *pstr << endl;
+	wcout << endl;
+	wcout << endl;
+	wcout << endl;
+	wcout << endl;
+	wcout << endl;
+	wcout << endl;
+	wcout << endl;
+	wcout << endl;
+	/*
     //
     // Do not use the try-catch pattern
     // if exception was thrown, just let the process crash
@@ -158,7 +197,9 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(WCHAR*  strEnvName, WCHAR* strEnvValue
         pstr->append(strEnvValue);
     }
     pstr->append(L"']\" /commit:apphost");
-    *pStrCmd = pstr;
+    
+	*pStrCmd = pstr;
+	*/
 
 Finished:
     return hr;
@@ -171,11 +212,6 @@ HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd)
     STARTUPINFO si       = { sizeof(STARTUPINFO) };
     DWORD       dwStatus = 0;
     PROCESS_INFORMATION pi;
-
-    //
-    // Don't call CreateProcess parallelly
-    // Simultaneously writing may cause the collapse of the applicationhost.config
-    //
 
     if (!CreateProcess(NULL,
         (LPWSTR)pstrCmd->c_str(),
@@ -192,9 +228,8 @@ HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd)
         goto Finished;
     }
 
-    // wait for at most 5 seconds to allow APPCMD finish
-    WaitForSingleObject(pi.hProcess, 5000); 
-
+	// wait for at most 5 seconds to allow APPCMD finish
+	WaitForSingleObject(pi.hProcess, 5000);
     if (!GetExitCodeProcess(pi.hProcess, &dwStatus) || dwStatus != 0)
     {
         //
@@ -226,7 +261,8 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     wstring* pstrAddCmd     = NULL;
     wstring* pstrRmCmd      = NULL;
 
-    unordered_map<wstring, LPTSTR> filter;
+	unordered_map<wstring, LPTSTR> filter;
+	unordered_map<wstring, wstring> envSet;
     POPULATE(filter) ;
 
     lpvEnv = GetEnvironmentStrings();
@@ -257,7 +293,14 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
                 
                 continue;
             }
-            hr = BuildAppCmdCommand(pstrName, pstrValue, pstrAppPoolName, &pstrAddCmd, TRUE);
+			wstring * pStrTempName = new wstring();
+			pStrTempName->append(pstrName);
+			wstring * pStrTempValue = new wstring();
+			pStrTempValue->append(pstrValue);
+
+			envSet.insert(KV_WSTR(*pStrTempName, *pStrTempValue));
+			/*
+			hr = BuildAppCmdCommand(pstrName, pstrValue, pstrAppPoolName, &pstrAddCmd, TRUE);
             if (FAILED(hr))
             {
                 goto Finished;
@@ -268,9 +311,11 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             {
                 goto Finished;
             }
+			*/
+            
             pEqualChar[0] = L'=';
 
-
+			/*
             //allow appcmd to fail if it is trying to remove environment variable
             RunCommand(pstrRmCmd);
 
@@ -281,12 +326,36 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             {
                 goto Finished;
             }
-        }
+			*/
+		}
         //
         // move to next environment variable
         //
         lpszVariable += lstrlen(lpszVariable) + 1;
     }
+
+	hr = BuildAppCmdCommand(envSet, pstrAppPoolName, &pstrAddCmd, TRUE);
+	if (FAILED(hr))
+	{
+		goto Finished;
+	}
+
+	hr = BuildAppCmdCommand(envSet, pstrAppPoolName, &pstrRmCmd, FALSE);
+	if (FAILED(hr))
+	{
+		goto Finished;
+	}
+
+	//allow appcmd to fail if it is trying to remove environment variable
+	RunCommand(pstrRmCmd);
+	
+	//appcmd must success when add new environment variable
+	hr = RunCommand(pstrAddCmd);
+
+	if (FAILED(hr))
+	{
+		goto Finished;
+	}
 
 Finished:
     if (lpvEnv != NULL)
