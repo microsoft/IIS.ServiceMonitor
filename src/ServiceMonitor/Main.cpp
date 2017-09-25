@@ -80,6 +80,7 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
     if (g_hStopEvent != INVALID_HANDLE_VALUE)
     {
         hr = sm.StartServiceByName(argv[1]);
+		EtwListner sl = EtwListner();
     }
 
     if (SUCCEEDED(hr))
