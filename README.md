@@ -36,7 +36,7 @@ for those Environment variable / value pairs present in this list below.
 | PROCESSOR_LEVEL         | *                                                                                                                                                                          |
 | PROCESSOR_REVISION      | *                                                                                                                                                                          |
 | PROGRAMFILES            | *                                                                                                                                                                          |
-| PROGRAMFILES(X86        | *                                                                                                                                                                          |
+| PROGRAMFILES(X86)       | *                                                                                                                                                                          |
 | PROGRAMW6432            | *                                                                                                                                                                          |
 | SYSTEMDRIVE             | *                                                                                                                                                                          |
 | WINDIR                  | *                                                                                                                                                                          |
@@ -44,7 +44,7 @@ for those Environment variable / value pairs present in this list below.
 | PROCESSOR_ARCHITECTURE  | *                                                                                                                                                                          |
 | SYSTEMROOT              | *                                                                                                                                                                          |
 | COMMONPROGRAMFILES      | *                                                                                                                                                                          |
-| COMMONPROGRAMFILES(X86  | *                                                                                                                                                                          |
+| COMMONPROGRAMFILES(X86) | *                                                                                                                                                                          |
 | COMMONPROGRAMW6432      | *                                                                                                                                                                          |
 
 ## Build
