@@ -129,14 +129,14 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet
     _ASSERT(strEnvValue != NULL);
     _ASSERT(pstrAppPoolName != NULL);
 
-    wstring* pstr = new wstring();
-    if (pstr == NULL)
+    wstring* pstrCmd = new wstring();
+    if (pstrCmd == NULL)
     {
         hr = ERROR_OUTOFMEMORY;
         goto Finished;
     }
-	pstr->append(m_pstrSysDirPath);
-	pstr->append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools ");
+	pstrCmd->append(m_pstrSysDirPath);
+	pstrCmd->append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools ");
 
 	for (auto it = envSet.begin(); it != envSet.end(); ++it)
 	{
@@ -144,31 +144,25 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet
 		wstring strEnvValue = it->second;
 		if (fAddCommand)
 		{
-			pstr->append(L"/+\"[name='");
+			pstrCmd->append(L"/+\"[name='");
 		}
 		else
 		{
-			pstr->append(L"/-\"[name='");
+			pstrCmd->append(L"/-\"[name='");
 
 		}
-		pstr->append(pstrAppPoolName);
-		pstr->append(L"'].environmentVariables.[name='");
-		pstr->append(strEnvName);
+		pstrCmd->append(pstrAppPoolName);
+		pstrCmd->append(L"'].environmentVariables.[name='");
+		pstrCmd->append(strEnvName);
 		if (fAddCommand)
 		{
-			pstr->append(L"',value='");
-			pstr->append(strEnvValue);
+			pstrCmd->append(L"',value='");
+			pstrCmd->append(strEnvValue);
 		}
-		pstr->append(L"']\" ");
+		pstrCmd->append(L"']\" ");
 	}
-	pstr->append(L" /commit:apphost");
-	*pStrCmd = pstr;
-
-	///////////////////////DEBUG//////////////////////////////
-	wcout << *pstr << endl;
-	wcout << endl;
-	wcout << endl;
-	///////////////////////DEBUG//////////////////////////////
+	pstrCmd->append(L" /commit:apphost");
+	*pStrCmd = pstrCmd;
 
 Finished:
     return hr;
