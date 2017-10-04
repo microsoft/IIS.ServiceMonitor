@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 
 #pragma once
 
@@ -18,5 +20,7 @@ public:
 
 	EtwListner();
 	~EtwListner();
+	void StartListen(LPWSTR pStrSessionName);
+
 
 };
