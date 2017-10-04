@@ -1,49 +1,61 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 #include"stdafx.h"
 #include"EtwListner.h"
 
+#define IIS_LOG_TRACE  L"SV-IISEventTraceSession"
+#define WCHAR_BYTES sizeof(WCHAR)
+#define CHAR_BYTES sizeof(CHAR)
+#define USHORT_BYTES sizeof(USHORT)
+#define ULONG_BYTESE sizeof(ULONG)
+#define ULONGLONG_BYTES sizeof(ULONGLONG)
+#define WCHAR_NULL_BYTES sizeof(WCHAR)
+#define CHAR_NULL_BYTES sizeof(CHAR)
+#define NULL_BYTES 1
 
-
-#define SERVICE_MONITOR_TRACE  L"SV-IISEventTraceSession2"
-#define WCHAR_BYTES sizeof(WCHAR);
-#define CHAR_BYTES sizeof(CHAR);
-#define USHORT_BYTES sizeof(USHORT);
-#define ULONG_BYTESE sizeof(ULONG);
-#define ULONGLONG_BYTES sizeof(ULONGLONG);
+//0x7E8AD27F - 0xB271 - 0x4EA2 - 0xA783 - A47BDE29143B
+static const GUID ProviderGuid =
+{ 0x7E8AD27F, 0xB271, 0x4EA2,{ 0xA7, 0x83, 0xA4, 0x7B, 0xDE, 0x29, 0x14, 0x3B } };
 
 
 
 VOID WINAPI
-EvtRecCallback(
+IISLoggingEvtRecCallback(
 	__in PEVENT_RECORD pEvtRecord
 )
 {
 	USHORT      UserDataLength = pEvtRecord->UserDataLength;
-	PVOID       UserData = pEvtRecord->UserData;
-	PVOID       userDataEnd = (char *)UserData + UserDataLength;
+	PVOID       UserData       = pEvtRecord->UserData;
+	PVOID       userDataEnd    = (char *)UserData + UserDataLength;
 
-	WCHAR *     date = ((WCHAR *)UserData + 2);
-	WCHAR *     time = ((WCHAR *)date + wcslen(date) + 1);
-	WCHAR *     clientIP = ((WCHAR *)time + wcslen(time) + 1);
-	WCHAR *     userName = ((WCHAR *)clientIP + wcslen(clientIP) + 1);
-	WCHAR *     siteName = ((WCHAR *)userName + wcslen(userName) + 1);
-	WCHAR *     computerName = ((WCHAR *)siteName + wcslen(siteName) + 1);
-	WCHAR *     serverIP = ((WCHAR *)computerName + wcslen(computerName) + 1);
-	CHAR *      method = ((CHAR *)serverIP + 2 * wcslen(serverIP) + 2);
-	WCHAR *     uriStem = (WCHAR *)(method + strlen(method) + 1);
-	CHAR *      uriQuery = ((CHAR *)uriStem + 2 * wcslen(uriStem) + 2);
-	USHORT *    protocolStatus = (USHORT *)(uriQuery + strlen(uriQuery) + 1);
-	ULONG *     win32Status = (ULONG *)((CHAR *)protocolStatus + sizeof(USHORT));
-	ULONGLONG * bytesSent = (ULONGLONG *)((CHAR *)win32Status + sizeof(ULONG));
-	ULONGLONG * bytesReceived = (ULONGLONG *)((CHAR *)bytesSent + sizeof(ULONGLONG));
-	ULONGLONG * timeTaken = (ULONGLONG *)((CHAR *)bytesReceived + sizeof(ULONGLONG));
-	USHORT *    port = (USHORT *)((CHAR *)timeTaken + sizeof(ULONGLONG));
-	CHAR *      userAgent = ((CHAR *)port + sizeof(USHORT));
-	CHAR *      cookie = ((CHAR *)userAgent + strlen(userAgent) + 1);
-	CHAR *      referer = ((CHAR *)cookie + strlen(cookie) + 1);
-	WCHAR *     protocolVer = (WCHAR *)(referer + strlen(referer) + 1);
-	CHAR *      host = (CHAR *)protocolVer + 2 * wcslen(protocolVer) + 2;
-	USHORT *    protocolSubStatus = (USHORT *)(host + strlen(host) + 1);
-	WCHAR *     customFields = (WCHAR *)((CHAR *)protocolSubStatus + sizeof(USHORT));
+	//
+	// Read Raw Data
+	//
+
+	WCHAR *     date              = ((WCHAR *)UserData + 2);
+	WCHAR *     time              = ((WCHAR *)date + wcslen(date) + NULL_BYTES);
+	WCHAR *     clientIP          = ((WCHAR *)time + wcslen(time) + NULL_BYTES);
+	WCHAR *     userName          = ((WCHAR *)clientIP + wcslen(clientIP) + NULL_BYTES);
+	WCHAR *     siteName          = ((WCHAR *)userName + wcslen(userName) + NULL_BYTES);
+	WCHAR *     computerName      = ((WCHAR *)siteName + wcslen(siteName) + NULL_BYTES);
+	WCHAR *     serverIP          = ((WCHAR *)computerName + wcslen(computerName) + NULL_BYTES);
+	CHAR *      method            = ((CHAR *)serverIP + WCHAR_BYTES * wcslen(serverIP) + WCHAR_NULL_BYTES);
+	WCHAR *     uriStem           = (WCHAR *)(method + strlen(method) + CHAR_NULL_BYTES);
+	CHAR *      uriQuery          = ((CHAR *)uriStem + WCHAR_BYTES * wcslen(uriStem) + WCHAR_NULL_BYTES);
+	USHORT *    protocolStatus    = (USHORT *)(uriQuery + strlen(uriQuery) + CHAR_NULL_BYTES);
+	ULONG *     win32Status       = (ULONG *)((CHAR *)protocolStatus + USHORT_BYTES);
+	ULONGLONG * bytesSent         = (ULONGLONG *)((CHAR *)win32Status + ULONG_BYTESE);
+	ULONGLONG * bytesReceived     = (ULONGLONG *)((CHAR *)bytesSent + ULONGLONG_BYTES);
+	ULONGLONG * timeTaken         = (ULONGLONG *)((CHAR *)bytesReceived + ULONGLONG_BYTES);
+	USHORT *    port              = (USHORT *)((CHAR *)timeTaken + ULONGLONG_BYTES);
+	CHAR *      userAgent         = ((CHAR *)port + USHORT_BYTES);
+	CHAR *      cookie            = ((CHAR *)userAgent + strlen(userAgent) + NULL_BYTES);
+	CHAR *      referer           = ((CHAR *)cookie + strlen(cookie) + NULL_BYTES);
+	WCHAR *     protocolVer       = (WCHAR *)(referer + strlen(referer) + CHAR_NULL_BYTES);
+	CHAR *      host              = (CHAR *)protocolVer + WCHAR_BYTES * wcslen(protocolVer) + WCHAR_NULL_BYTES;
+	USHORT *    protocolSubStatus = (USHORT *)(host + strlen(host) + CHAR_NULL_BYTES);
+	WCHAR *     customFields      = (WCHAR *)((CHAR *)protocolSubStatus + USHORT_BYTES);
 
 	/*
 	if ((customFields + wcslen(customFields)) <= userDataEnd)
@@ -52,6 +64,10 @@ EvtRecCallback(
 		return;
 	}
 	*/
+	
+	//
+	// Print the data out, try to match the order in event viewer
+	//
 
 	_tprintf(L""
 		"date %s "
@@ -98,17 +114,18 @@ EvtRecCallback(
 		"time-taken %I64u "
 		, userAgent, cookie, referer, host, *protocolStatus, *protocolSubStatus, *win32Status, *bytesSent, *bytesReceived, *timeTaken
 	);
+
 	_tprintf(L""
 		"%s"
 		, customFields
 	);
+
 	_tprintf(L"\n\n");
 	return;
-
 }
 
 DWORD WINAPI
-ProcessIISEtwThreadProc(
+ProcessEtwThreadProc(
 	LPVOID             pValue
 )
 {
@@ -120,65 +137,76 @@ ProcessIISEtwThreadProc(
 		NULL,
 		NULL
 	);
+
 	if (uStatus != ERROR_SUCCESS)
 	{
-		std::wcout << "PROCESS ETW TRACE FAILED" << std::endl;
+		_tprintf(L"ProcessTrace FAIL %i\n", uStatus);
 		return NULL;
 	}
 
 	return NULL;
 }
 
-//0x7E8AD27F - 0xB271 - 0x4EA2 - 0xA783 - A47BDE29143B
-static const GUID ProviderGuid =
-{ 0x7E8AD27F, 0xB271, 0x4EA2,{ 0xA7, 0x83, 0xA4, 0x7B, 0xDE, 0x29, 0x14, 0x3B } };
 
-#define HTTP_LOG_EVENT_HANDLER_SESSION_BUFFER_SIZE sizeof(EVENT_TRACE_PROPERTIES) + sizeof(SERVICE_MONITOR_TRACE)
 EtwListner::~EtwListner()
 {
 }
 
 EtwListner::EtwListner()
-	{
-	ULONG   uStatus = ERROR_SUCCESS;
+{
+	StartListen(IIS_LOG_TRACE);
+}
 
-	EVENT_TRACE_PROPERTIES stsessionProperties;
-	stsessionProperties.Wnode.BufferSize = 1000;
-	StopTrace(NULL, SERVICE_MONITOR_TRACE, &stsessionProperties);
+void EtwListner::StartListen(LPWSTR pStrSessionName)
+{
+	ULONG     uStatus = ERROR_SUCCESS;
+	DWORD	  dwThreadId;
+	HANDLE    pThreadHandle;
+	EVENT_TRACE_PROPERTIES closeSessionPropt;
+	EVENT_TRACE_PROPERTIES iisLogSessionPropt;
+
+	//TRACEHANDLE handle;
+
+	TRACEHANDLE hTrace;
+
+	//
+	// stop the trace if the trace already started
+	//
+
+
+	closeSessionPropt.Wnode.BufferSize = 1000;
+	StopTrace(NULL, pStrSessionName, &closeSessionPropt);
 
 	if (uStatus != ERROR_SUCCESS)
 	{
 		_tprintf(L"UNABLE TO STOP OLD TRACE %i\n", uStatus);
 	}
 
-	EVENT_TRACE_PROPERTIES stp;
-	ZeroMemory(&stp, sizeof(EVENT_TRACE_PROPERTIES));
+	ZeroMemory(&iisLogSessionPropt, sizeof(EVENT_TRACE_PROPERTIES));
 
-	stp.Wnode.BufferSize = HTTP_LOG_EVENT_HANDLER_SESSION_BUFFER_SIZE;
-	stp.Wnode.Flags = WNODE_FLAG_TRACED_GUID;
-	stp.Wnode.ClientContext = 1;
-	stp.LogFileMode = EVENT_TRACE_REAL_TIME_MODE | EVENT_TRACE_NO_PER_PROCESSOR_BUFFERING;
-	stp.FlushTimer = 1;
-	stp.MaximumFileSize = 1024;
-	stp.LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
-	stp.LogFileNameOffset = 0;
-	stp.BufferSize = 1024;
-	stp.MinimumBuffers = 20;
-	stp.MaximumBuffers = 30;
+	iisLogSessionPropt.Wnode.BufferSize = sizeof(EVENT_TRACE_PROPERTIES) + wcslen(pStrSessionName) * WCHAR_BYTES + WCHAR_NULL_BYTES;
 
-	TRACEHANDLE handle;
+	iisLogSessionPropt.Wnode.Flags = WNODE_FLAG_TRACED_GUID;
+	iisLogSessionPropt.Wnode.ClientContext = 1;
+	iisLogSessionPropt.LogFileMode = EVENT_TRACE_REAL_TIME_MODE | EVENT_TRACE_NO_PER_PROCESSOR_BUFFERING;
+	iisLogSessionPropt.FlushTimer = 1;
+	iisLogSessionPropt.MaximumFileSize = 1024;
+	iisLogSessionPropt.LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
+	iisLogSessionPropt.LogFileNameOffset = 0;
+	iisLogSessionPropt.BufferSize = 1024;
+	iisLogSessionPropt.MinimumBuffers = 20;
+	iisLogSessionPropt.MaximumBuffers = 30;
 
-	TRACEHANDLE hTrace;
 	EVENT_TRACE_LOGFILE eventTraceLog = { 0 };
 
-	uStatus = StartTrace((PTRACEHANDLE)&handle, SERVICE_MONITOR_TRACE, &stp);
+	uStatus = StartTrace((PTRACEHANDLE)&hTrace, pStrSessionName, &iisLogSessionPropt);
 	if (uStatus != ERROR_SUCCESS)
 	{
 		_tprintf(L"START TRACE FAIL %i\n", uStatus);
 		goto finish;
 	}
 
-	uStatus = EnableTraceEx2(handle,
+	uStatus = EnableTraceEx2(hTrace,
 		(LPCGUID)&ProviderGuid,
 		EVENT_CONTROL_CODE_ENABLE_PROVIDER,
 		TRACE_LEVEL_INFORMATION,
@@ -190,16 +218,15 @@ EtwListner::EtwListner()
 
 	if (uStatus != ERROR_SUCCESS)
 	{
-		_tprintf(L"ENABLE TRACe FAIL \n");
+		_tprintf(L"ENABLE TRACE FAIL \n");
 		goto finish;
-
 	}
 
 	ZeroMemory(&eventTraceLog, sizeof(EVENT_TRACE_LOGFILE));
 
 	eventTraceLog.LogFileName = NULL;
 
-	eventTraceLog.LoggerName = SERVICE_MONITOR_TRACE;
+	eventTraceLog.LoggerName = pStrSessionName;
 	eventTraceLog.CurrentTime = 0;
 	eventTraceLog.BuffersRead = 0;
 
@@ -210,41 +237,42 @@ EtwListner::EtwListner()
 	eventTraceLog.Filled = 0;
 	eventTraceLog.EventsLost = 0;
 
-	eventTraceLog.EventRecordCallback = EvtRecCallback;
+	eventTraceLog.EventRecordCallback = IISLoggingEvtRecCallback;
 	eventTraceLog.Context = NULL;
+
+	//
+	// reuse the hTrace handle variable
+	//
 
 	hTrace = OpenTrace(&eventTraceLog);
 	if (hTrace == INVALID_PROCESSTRACE_HANDLE)
 	{
 		uStatus = GetLastError();
-		std::wcout << "OPEN TRACE FAIL" << std::endl;
+		_tprintf(L"OPEN TRACE FAIL %i\n", uStatus);
 		goto finish;
 	}
 
 
-	DWORD dwThreadId;
-	HANDLE  pHandle;
-	pHandle = CreateThread(NULL,
+	pThreadHandle = CreateThread(NULL,
 		0x2000000,
-		ProcessIISEtwThreadProc,
+		ProcessEtwThreadProc,
 		(LPVOID)&hTrace,
 		0,
 		&dwThreadId);
-	if (pHandle == NULL)
+
+	if (pThreadHandle == NULL)
 	{
 		uStatus = GetLastError();
-		std::wcout << "START THREAD FAIL" << std::endl;
+		_tprintf(L"START THREAD FAIL %i\n", uStatus);
 		goto finish;
 	}
 	std::wcout << "BYE" << std::endl;
 
 
 finish:
+
 	if (uStatus != ERROR_SUCCESS)
+	{
 		return;
-
 	}
-
-
-
-
+}
