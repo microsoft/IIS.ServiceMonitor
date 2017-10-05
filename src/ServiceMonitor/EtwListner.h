@@ -17,10 +17,7 @@ class EtwListner
 {
 
 public:
-
 	EtwListner();
 	~EtwListner();
-	void StartListen(LPWSTR pStrSessionName);
-
-
+	void StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID);
 };

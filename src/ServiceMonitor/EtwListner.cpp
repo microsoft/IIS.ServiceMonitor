@@ -18,8 +18,6 @@
 static const GUID ProviderGuid =
 { 0x7E8AD27F, 0xB271, 0x4EA2,{ 0xA7, 0x83, 0xA4, 0x7B, 0xDE, 0x29, 0x14, 0x3B } };
 
-
-
 VOID WINAPI
 IISLoggingEvtRecCallback(
 	__in PEVENT_RECORD pEvtRecord
@@ -154,10 +152,10 @@ EtwListner::~EtwListner()
 
 EtwListner::EtwListner()
 {
-	StartListen(IIS_LOG_TRACE);
+	StartListen(IIS_LOG_TRACE, &ProviderGuid);
 }
 
-void EtwListner::StartListen(LPWSTR pStrSessionName)
+void EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
 {
 	ULONG     uStatus = ERROR_SUCCESS;
 	DWORD	  dwThreadId;
@@ -172,7 +170,6 @@ void EtwListner::StartListen(LPWSTR pStrSessionName)
 	//
 	// stop the trace if the trace already started
 	//
-
 
 	closeSessionPropt.Wnode.BufferSize = 1000;
 	StopTrace(NULL, pStrSessionName, &closeSessionPropt);
@@ -207,7 +204,7 @@ void EtwListner::StartListen(LPWSTR pStrSessionName)
 	}
 
 	uStatus = EnableTraceEx2(hTrace,
-		(LPCGUID)&ProviderGuid,
+		(LPCGUID)pTraceGUID,
 		EVENT_CONTROL_CODE_ENABLE_PROVIDER,
 		TRACE_LEVEL_INFORMATION,
 		0,
@@ -251,7 +248,6 @@ void EtwListner::StartListen(LPWSTR pStrSessionName)
 		_tprintf(L"OPEN TRACE FAIL %i\n", uStatus);
 		goto finish;
 	}
-
 
 	pThreadHandle = CreateThread(NULL,
 		0x2000000,
