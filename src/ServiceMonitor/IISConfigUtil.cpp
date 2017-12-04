@@ -176,9 +176,9 @@ HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd, BOOL fIgnoreError)
     DWORD       dwStatus = 0;
     PROCESS_INFORMATION pi;
 
-	ZeroMemory(&si, sizeof(STARTUPINFO));
-	si.cb = sizeof(STARTUPINFO);
-	si.dwFlags |= STARTF_USESTDHANDLES;
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+    si.cb = sizeof(STARTUPINFO);
+    si.dwFlags |= STARTF_USESTDHANDLES;
 
     if (!CreateProcess(NULL,
         (LPWSTR)pstrCmd->c_str(),
@@ -195,8 +195,8 @@ HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd, BOOL fIgnoreError)
         goto Finished;
     }
 
-	// wait for at most 5 seconds to allow APPCMD finish
-	WaitForSingleObject(pi.hProcess, 5000);
+    // wait for at most 5 seconds to allow APPCMD finish
+    WaitForSingleObject(pi.hProcess, 5000);
     if ((!GetExitCodeProcess(pi.hProcess, &dwStatus) || dwStatus != 0) && (!fIgnoreError))
     {
         //
