@@ -135,34 +135,34 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet
         hr = ERROR_OUTOFMEMORY;
         goto Finished;
     }
-	pstrCmd->append(m_pstrSysDirPath);
-	pstrCmd->append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools ");
+    pstrCmd->append(m_pstrSysDirPath);
+    pstrCmd->append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools ");
 
-	for (auto it = envSet.begin(); it != envSet.end(); ++it)
-	{
-		wstring strEnvName = it->first;
-		wstring strEnvValue = it->second;
-		if (fAddCommand)
-		{
-			pstrCmd->append(L"/+\"[name='");
-		}
-		else
-		{
-			pstrCmd->append(L"/-\"[name='");
+    for (auto it = envSet.begin(); it != envSet.end(); ++it)
+    {
+        wstring strEnvName = it->first;
+        wstring strEnvValue = it->second;
+        if (fAddCommand)
+        {
+            pstrCmd->append(L"/+\"[name='");
+        }
+        else
+        {
+            pstrCmd->append(L"/-\"[name='");
 
-		}
-		pstrCmd->append(pstrAppPoolName);
-		pstrCmd->append(L"'].environmentVariables.[name='");
-		pstrCmd->append(strEnvName);
-		if (fAddCommand)
-		{
-			pstrCmd->append(L"',value='");
-			pstrCmd->append(strEnvValue);
-		}
-		pstrCmd->append(L"']\" ");
-	}
-	pstrCmd->append(L" /commit:apphost");
-	*pStrCmd = pstrCmd;
+        }
+        pstrCmd->append(pstrAppPoolName);
+        pstrCmd->append(L"'].environmentVariables.[name='");
+        pstrCmd->append(strEnvName);
+        if (fAddCommand)
+        {
+            pstrCmd->append(L"',value='");
+            pstrCmd->append(strEnvValue);
+        }
+        pstrCmd->append(L"']\" ");
+    }
+    pstrCmd->append(L" /commit:apphost");
+    *pStrCmd = pstrCmd;
 
 Finished:
     return hr;
@@ -228,8 +228,8 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     wstring* pstrAddCmd     = NULL;
     wstring* pstrRmCmd      = NULL;
 
-	unordered_map<wstring, LPTSTR> filter;
-	unordered_map<wstring, wstring> envSet;
+    unordered_map<wstring, LPTSTR> filter;
+    unordered_map<wstring, wstring> envSet;
     POPULATE(filter) ;
 
     lpvEnv = GetEnvironmentStrings();
@@ -260,43 +260,43 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
                 
                 continue;
             }
-			wstring * pStrTempName = new wstring();
-			pStrTempName->append(pstrName);
-			wstring * pStrTempValue = new wstring();
-			pStrTempValue->append(pstrValue);
+            wstring * pStrTempName = new wstring();
+            pStrTempName->append(pstrName);
+            wstring * pStrTempValue = new wstring();
+            pStrTempValue->append(pstrValue);
 
-			envSet.insert(KV_WSTR(*pStrTempName, *pStrTempValue));
+            envSet.insert(KV_WSTR(*pStrTempName, *pStrTempValue));
             
             pEqualChar[0] = L'=';
 
-		}
+        }
         //
         // move to next environment variable
         //
         lpszVariable += lstrlen(lpszVariable) + 1;
     }
 
-	hr = BuildAppCmdCommand(envSet, pstrAppPoolName, &pstrAddCmd, TRUE);
-	if (FAILED(hr))
-	{
-		goto Finished;
-	}
+    hr = BuildAppCmdCommand(envSet, pstrAppPoolName, &pstrAddCmd, TRUE);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
 
-	hr = BuildAppCmdCommand(envSet, pstrAppPoolName, &pstrRmCmd, FALSE);
-	if (FAILED(hr))
-	{
-		goto Finished;
-	}
+    hr = BuildAppCmdCommand(envSet, pstrAppPoolName, &pstrRmCmd, FALSE);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
 
-	//allow appcmd to fail if it is trying to remove environment variable
-	RunCommand(pstrRmCmd, TRUE);
-	//appcmd must success when add new environment variable
-	hr = RunCommand(pstrAddCmd, FALSE);
+    //allow appcmd to fail if it is trying to remove environment variable
+    RunCommand(pstrRmCmd, TRUE);
+    //appcmd must success when add new environment variable
+    hr = RunCommand(pstrAddCmd, FALSE);
 
-	if (FAILED(hr))
-	{
-		goto Finished;
-	}
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
 
 Finished:
     if (lpvEnv != NULL)
