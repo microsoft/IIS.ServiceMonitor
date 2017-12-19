@@ -25,10 +25,10 @@ VOID CtrlHandle(DWORD dwCtrlType)
 
 int __cdecl _tmain(int argc, _TCHAR* argv[])
 {
-    HRESULT hr              = S_OK;
-	Service_Monitor sm      = Service_Monitor();
-	EtwListner      ewlList = EtwListner();
-	BOOL fListETW           = FALSE;
+    HRESULT hr = S_OK;
+    Service_Monitor sm = Service_Monitor();
+    EtwListner etwlList = EtwListner();
+    BOOL fListETW = FALSE;
 
     if (argc <= 1)
     {
@@ -59,10 +59,10 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
         }
     }
 
-	if (argc >= 2 && (_wcsicmp(argv[1], L"-listETW") == 0))
-	{
-		fListETW = TRUE;
-	}
+    if (argc >= 2 && (_wcsicmp(argv[1], L"-listETW") == 0))
+    {
+        fListETW = TRUE;
+    }
 
     g_hStopEvent = CreateEvent(
         NULL,               // default security attributes
@@ -88,13 +88,13 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
     {
         hr = sm.StartServiceByName(argv[1]);
 
-		//
-		// listen on IIS event and print the result to STDOUT
-		//
-		if (fListETW)
-		{
-			ewlList.StartListenIISEvent();
-		}
+        //
+        // listen on IIS event and print the result to STDOUT
+        //
+        if (fListETW)
+        {
+            etwlList.StartListenIISEvent();
+        }
     }
 
     if (SUCCEEDED(hr))

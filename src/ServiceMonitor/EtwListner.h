@@ -15,10 +15,9 @@
 
 class EtwListner
 {
-
 public:
     EtwListner();
     ~EtwListner();
-	void StartListenIISEvent();
+    void StartListenIISEvent();
     void StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID);
 };

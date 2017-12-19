@@ -4,7 +4,7 @@
 #include"stdafx.h"
 #include"EtwListner.h"
 
-#define IIS_LOG_TRACE  L"SV-IISEventTraceSession"
+#define IIS_LOG_TRACE L"SV-IISEventTraceSession"
 #define WCHAR_BYTES sizeof(WCHAR)
 #define CHAR_BYTES sizeof(CHAR)
 #define USHORT_BYTES sizeof(USHORT)
@@ -14,8 +14,8 @@
 #define CHAR_NULL_BYTES sizeof(CHAR)
 #define NULL_BYTES 1
 
-//IIS ETW GUID Provider
-//0x7E8AD27F - 0xB271 - 0x4EA2 - 0xA783 - A47BDE29143B
+// IIS ETW GUID Provider
+// 0x7E8AD27F - 0xB271 - 0x4EA2 - 0xA783 - A47BDE29143B
 static const GUID IISProviderGuid =
 { 0x7E8AD27F, 0xB271, 0x4EA2,{ 0xA7, 0x83, 0xA4, 0x7B, 0xDE, 0x29, 0x14, 0x3B } };
 
