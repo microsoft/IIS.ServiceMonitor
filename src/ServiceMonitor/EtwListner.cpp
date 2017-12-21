@@ -149,10 +149,14 @@ EtwListner::EtwListner()
 
 void EtwListner::StartListenIISEvent()
 {
-	StartListen(IIS_LOG_TRACE, &IISProviderGuid);
+    ULONG hr = StartListen(IIS_LOG_TRACE, &IISProviderGuid);
+    if (hr != ERROR_SUCCESS)
+    {
+        _tprintf(L"FAILED TO LISTEN TO IIS ETW LOGS %i\n", hr);
+    }
 }
 
-void EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
+ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
 {
     ULONG     uStatus = ERROR_SUCCESS;
     DWORD	  dwThreadId;
@@ -259,13 +263,10 @@ void EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
         _tprintf(L"START THREAD FAIL %i\n", uStatus);
         goto finish;
     }
-    std::wcout << "BYE" << std::endl;
 
+    std::wcout << "Start Listen to IIS Etw Logs..." << std::endl;
 
 finish:
 
-    if (uStatus != ERROR_SUCCESS)
-    {
-        return;
-    }
+    return uStatus;
 }

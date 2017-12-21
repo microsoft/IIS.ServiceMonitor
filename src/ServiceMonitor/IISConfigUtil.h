@@ -16,6 +16,7 @@ public:
     ~IISConfigUtil();
     HRESULT Initialize();
     HRESULT UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName);
+    HRESULT EnableEtwLogging();
 
 private:
     HRESULT RunCommand(std::wstring * pstrCmd, BOOL fIgnoreError);
