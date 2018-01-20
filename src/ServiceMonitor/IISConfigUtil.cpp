@@ -130,10 +130,10 @@ HRESULT IISConfigUtil::EnableEtwLogging()
     //
     wstring * strLoggingConfigCommand = new wstring(m_pstrSysDirPath);
     strLoggingConfigCommand->append(L"\\inetsrv\\appcmd.exe set config  -section:system.applicationHost/sites /\"[name = \'Default Web Site\'].logFile.logTargetW3C:ETW, File\"");
-    return RunCommand(strLoggingConfigCommand);
+    return RunCommand(strLoggingConfigCommand, FALSE);
 }
 
-HRESULT IISConfigUtil::BuildAppCmdCommand(WCHAR*  strEnvName, WCHAR* strEnvValue, WCHAR* pstrAppPoolName, wstring** pStrCmd, BOOL fAddCommand)
+HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet, WCHAR* pstrAppPoolName, wstring** pStrCmd, BOOL fAddCommand)
 {
     HRESULT hr = S_OK;
 
