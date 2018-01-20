@@ -18,8 +18,8 @@ public:
     HRESULT UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName);
 
 private:
-    HRESULT RunCommand(std::wstring * pstrCmd);
-    HRESULT BuildAppCmdCommand(WCHAR*  strEnvName, WCHAR* strEnvValue, WCHAR* pstrAppPoolName, std::wstring** pStrCmd, BOOL fAddCommand);
+    HRESULT RunCommand(std::wstring * pstrCmd, BOOL fIgnoreError);
+    HRESULT BuildAppCmdCommand(std::unordered_map<std::wstring, std::wstring> envSet, WCHAR* pstrAppPoolName, std::wstring** pStrCmd, BOOL fAddCommand);
     BOOL    FilterEnv(std::unordered_map<std::wstring, LPTSTR> filter, LPTSTR strEnvName, LPTSTR strEnvValue);
     TCHAR*  m_pstrSysDirPath;
 };
