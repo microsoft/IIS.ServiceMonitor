@@ -56,20 +56,20 @@ IISConfigUtil::~IISConfigUtil()
 BOOL IISConfigUtil::FilterEnv(unordered_map<wstring, LPTSTR> filter, LPTSTR strEnvName, LPTSTR strEnvValue)
 {
     LPTSTR   strFilterValue;
-    wstring* strFilterName;
+    wstring strFilterName;
     _ASSERT(strEnvName != NULL);
     _ASSERT(strEnvValue != NULL);
 
     CharUpper(strEnvName);
-    strFilterName = new wstring(strEnvName);
-    auto value = filter.find(*strFilterName);
+    strFilterName = strEnvName;
+    auto value = filter.find(strFilterName);
     if (value == filter.end())
     {
         return FALSE;
     }
     
     strFilterValue = value->second;
-    
+
     //don't need to match value or value match
     if ((strFilterValue == NULL ) || (lstrcmpi(strEnvValue, strFilterValue) == 0))
     {
