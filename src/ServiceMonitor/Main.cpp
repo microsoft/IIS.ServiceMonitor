@@ -57,7 +57,7 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
             goto Finished;
         }
 
-        if (argc >= 2 && ((_wcsicmp(argv[2], L"-listETW") == 0)))
+        if (configHelper.IISConsoleLoggingEnabled())
         {
             //
             // continue to launch configHelper even without ETW Listener
