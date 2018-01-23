@@ -22,7 +22,7 @@ public:
 private:
     HRESULT RunCommand(std::wstring * pstrCmd, BOOL fIgnoreError);
     HRESULT BuildAppCmdCommand(std::unordered_map<std::wstring, std::wstring> envSet, WCHAR* pstrAppPoolName, std::wstring** pStrCmd, BOOL fAddCommand);
-    BOOL    NameValuePairExist(std::unordered_map<std::wstring, std::wstring> filter, LPTSTR pStrName, LPTSTR pStrValue);
+    BOOL    NameValuePairExists(std::unordered_map<std::wstring, std::wstring> filter, LPTSTR pStrName, LPTSTR pStrValue);
     TCHAR*  m_pstrSysDirPath;
     BOOL    fIISConsoleLoggingEnabled;
 };

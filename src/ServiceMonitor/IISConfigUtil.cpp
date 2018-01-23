@@ -5,10 +5,10 @@
 #include <iostream>
 using namespace std;
 
-#define KV(a,b) pair<wstring, wstring>(a,b)
 #define ENABLE_IIS_CONSOLE_LOGGING_NAME  L"ENABLE_IIS_CONSOLE_LOGGING"
-#define ENABLE_IIS_CONSOLE_LOGGING_VALUE L"1"
+#define ENV_ENABLED                      L"1"
 
+#define KV(a,b) pair<wstring, wstring>(a,b)
 #define POPULATE(map) do                          \
                     {                             \
                         map.insert(KV(L"TMP",                     L"C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp")); \
@@ -56,7 +56,7 @@ IISConfigUtil::~IISConfigUtil()
     }
 }
 
-BOOL IISConfigUtil::NameValuePairExist(unordered_map<wstring, wstring> filter, LPTSTR pStrName, LPTSTR pStrValue)
+BOOL IISConfigUtil::NameValuePairExists(unordered_map<wstring, wstring> filter, LPTSTR pStrName, LPTSTR pStrValue)
 {
     wstring strLookUpName;
     wstring strLookUpValue;
@@ -277,7 +277,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             pEqualChar[0] = L'\0';
             CharUpper(pstrName);
 
-            if (NameValuePairExist(filter, pstrName, pstrValue))
+            if (NameValuePairExists(filter, pstrName, pstrValue))
             {
                 pEqualChar[0] = L'=';
                 lpszVariable += lstrlen(lpszVariable) + 1;
@@ -303,7 +303,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     //
     // check if iis console logging is enabled
     //
-    if (NameValuePairExist(envSet, ENABLE_IIS_CONSOLE_LOGGING_NAME, ENABLE_IIS_CONSOLE_LOGGING_VALUE))
+    if (NameValuePairExists(envSet, ENABLE_IIS_CONSOLE_LOGGING_NAME, ENV_ENABLED))
     {
 
         fIISConsoleLoggingEnabled = TRUE;

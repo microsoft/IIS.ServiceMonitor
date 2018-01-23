@@ -65,7 +65,7 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
             hr = configHelper.EnableEtwLogging();
             if (FAILED(hr))
             {
-                _tprintf(L"\nERROR: Failed enable IIS ETW Logging [%d]\n", hr);
+                _tprintf(L"\nERROR: Failed to enable IIS ETW Logging [%d]\n", hr);
                 hr = S_OK;
             }
             else
