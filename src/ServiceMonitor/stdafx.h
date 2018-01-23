@@ -15,6 +15,7 @@
 #include <string>
 #include "ServiceMonitor.h"
 #include "IISConfigUtil.h"
+#include "EtwListner.h"
 #include <unordered_map>
 #include <Windows.h>
 

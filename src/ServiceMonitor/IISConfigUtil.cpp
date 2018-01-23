@@ -5,8 +5,10 @@
 #include <iostream>
 using namespace std;
 
-#define KV(a,b) pair<wstring, LPTSTR>(a,b)
-#define KV_WSTR(a,b) pair<wstring, wstring>(a,b)
+#define ENABLE_IIS_CONSOLE_LOGGING_NAME  L"ENABLE_IIS_CONSOLE_LOGGING"
+#define ENV_ENABLED                      L"1"
+
+#define KV(a,b) pair<wstring, wstring>(a,b)
 #define POPULATE(map) do                          \
                     {                             \
                         map.insert(KV(L"TMP",                     L"C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp")); \
@@ -22,23 +24,23 @@ using namespace std;
                         map.insert(KV(L"ALLUSERSPROFILE",         L"C:\\ProgramData")); \
                         map.insert(KV(L"PATH",                    L"C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Users\\ContainerAdministrator\\AppData\\Local\\Microsoft\\WindowsApps")); \
                         map.insert(KV(L"PATHEXT",                 L".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC")); \
-                        map.insert(KV(L"COMPUTERNAME",            NULL)); \
-                        map.insert(KV(L"COMSPEC",                 NULL)); \
-                        map.insert(KV(L"OS",                      NULL)); \
-                        map.insert(KV(L"PROCESSOR_IDENTIFIER",    NULL)); \
-                        map.insert(KV(L"PROCESSOR_LEVEL",         NULL)); \
-                        map.insert(KV(L"PROCESSOR_REVISION",      NULL)); \
-                        map.insert(KV(L"PROGRAMFILES",            NULL)); \
-                        map.insert(KV(L"PROGRAMFILES(X86)",       NULL)); \
-                        map.insert(KV(L"PROGRAMW6432",            NULL)); \
-                        map.insert(KV(L"SYSTEMDRIVE",             NULL)); \
-                        map.insert(KV(L"WINDIR",                  NULL)); \
-                        map.insert(KV(L"NUMBER_OF_PROCESSORS",    NULL)); \
-                        map.insert(KV(L"PROCESSOR_ARCHITECTURE",  NULL)); \
-                        map.insert(KV(L"SYSTEMROOT",              NULL)); \
-                        map.insert(KV(L"COMMONPROGRAMFILES",      NULL)); \
-                        map.insert(KV(L"COMMONPROGRAMFILES(X86)", NULL)); \
-                        map.insert(KV(L"COMMONPROGRAMW6432",      NULL)); \
+                        map.insert(KV(L"COMPUTERNAME",            L"")); \
+                        map.insert(KV(L"COMSPEC",                 L"")); \
+                        map.insert(KV(L"OS",                      L"")); \
+                        map.insert(KV(L"PROCESSOR_IDENTIFIER",    L"")); \
+                        map.insert(KV(L"PROCESSOR_LEVEL",         L"")); \
+                        map.insert(KV(L"PROCESSOR_REVISION",      L"")); \
+                        map.insert(KV(L"PROGRAMFILES",            L"")); \
+                        map.insert(KV(L"PROGRAMFILES(X86)",       L"")); \
+                        map.insert(KV(L"PROGRAMW6432",            L"")); \
+                        map.insert(KV(L"SYSTEMDRIVE",             L"")); \
+                        map.insert(KV(L"WINDIR",                  L"")); \
+                        map.insert(KV(L"NUMBER_OF_PROCESSORS",    L"")); \
+                        map.insert(KV(L"PROCESSOR_ARCHITECTURE",  L"")); \
+                        map.insert(KV(L"SYSTEMROOT",              L"")); \
+                        map.insert(KV(L"COMMONPROGRAMFILES",      L"")); \
+                        map.insert(KV(L"COMMONPROGRAMFILES(X86)", L"")); \
+                        map.insert(KV(L"COMMONPROGRAMW6432",      L"")); \
                     } while(0)
 
 IISConfigUtil::IISConfigUtil():m_pstrSysDirPath(NULL)
@@ -54,25 +56,29 @@ IISConfigUtil::~IISConfigUtil()
     }
 }
 
-BOOL IISConfigUtil::FilterEnv(unordered_map<wstring, LPTSTR> filter, LPTSTR strEnvName, LPTSTR strEnvValue)
+BOOL IISConfigUtil::NameValuePairExists(unordered_map<wstring, wstring> filter, LPTSTR pStrName, LPTSTR pStrValue)
 {
-    LPTSTR   strFilterValue;
-    wstring strFilterName;
-    _ASSERT(strEnvName != NULL);
-    _ASSERT(strEnvValue != NULL);
+    wstring strLookUpName;
+    wstring strLookUpValue;
+    wstring strValueInMap;
 
-    CharUpper(strEnvName);
-    strFilterName = strEnvName;
-    auto value = filter.find(strFilterName);
+    _ASSERT(pStrName != NULL);
+    _ASSERT(pStrValue != NULL);
+
+    strLookUpName = pStrName;
+    strLookUpValue = pStrValue;
+
+    auto value = filter.find(strLookUpName);
+
     if (value == filter.end())
     {
         return FALSE;
     }
     
-    strFilterValue = value->second;
+    strValueInMap = value->second;
 
     //don't need to match value or value match
-    if ((strFilterValue == NULL ) || (lstrcmpi(strEnvValue, strFilterValue) == 0))
+    if ((strValueInMap.empty()) || (strLookUpValue == strValueInMap))
     {
         return TRUE;
     }
@@ -119,6 +125,23 @@ Finished:
         pBuffer = NULL;
     }
     return hr;
+}
+
+BOOL IISConfigUtil::IISConsoleLoggingEnabled()
+{
+    return fIISConsoleLoggingEnabled;
+}
+
+HRESULT IISConfigUtil::EnableEtwLogging()
+{
+    HRESULT hr = S_OK;
+    
+    //
+    // wstring will be freed in RunCommand
+    //
+    wstring * strLoggingConfigCommand = new wstring(m_pstrSysDirPath);
+    strLoggingConfigCommand->append(L"\\inetsrv\\appcmd.exe set config  -section:system.applicationHost/sites /\"[name = \'Default Web Site\'].logFile.logTargetW3C:ETW, File\"");
+    return RunCommand(strLoggingConfigCommand, FALSE);
 }
 
 HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet, WCHAR* pstrAppPoolName, wstring** pStrCmd, BOOL fAddCommand)
@@ -228,7 +251,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     wstring* pstrAddCmd     = NULL;
     wstring* pstrRmCmd      = NULL;
 
-    unordered_map<wstring, LPTSTR> filter;
+    unordered_map<wstring, wstring> filter;
     unordered_map<wstring, wstring> envSet;
     POPULATE(filter) ;
 
@@ -251,9 +274,10 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             LPTSTR pstrValue = pEqualChar + 1;
             LPTSTR pstrName = lpszVariable;
 
-
             pEqualChar[0] = L'\0';
-            if (FilterEnv(filter, pstrName, pstrValue))
+            CharUpper(pstrName);
+
+            if (NameValuePairExists(filter, pstrName, pstrValue))
             {
                 pEqualChar[0] = L'=';
                 lpszVariable += lstrlen(lpszVariable) + 1;
@@ -265,7 +289,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             wstring * pStrTempValue = new wstring();
             pStrTempValue->append(pstrValue);
 
-            envSet.insert(KV_WSTR(*pStrTempName, *pStrTempValue));
+            envSet.insert(KV(*pStrTempName, *pStrTempValue));
             
             pEqualChar[0] = L'=';
 
@@ -274,6 +298,15 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
         // move to next environment variable
         //
         lpszVariable += lstrlen(lpszVariable) + 1;
+    }
+
+    //
+    // check if iis console logging is enabled
+    //
+    if (NameValuePairExists(envSet, ENABLE_IIS_CONSOLE_LOGGING_NAME, ENV_ENABLED))
+    {
+
+        fIISConsoleLoggingEnabled = TRUE;
     }
 
     hr = BuildAppCmdCommand(envSet, pstrAppPoolName, &pstrAddCmd, TRUE);
