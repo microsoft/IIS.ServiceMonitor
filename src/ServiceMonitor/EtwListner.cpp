@@ -182,7 +182,7 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
 
     ZeroMemory(&iisLogSessionPropt, sizeof(EVENT_TRACE_PROPERTIES));
 
-    iisLogSessionPropt.Wnode.BufferSize = sizeof(EVENT_TRACE_PROPERTIES) + wcslen(pStrSessionName) * WCHAR_BYTES + WCHAR_NULL_BYTES;
+    iisLogSessionPropt.Wnode.BufferSize = sizeof(EVENT_TRACE_PROPERTIES) + (ULONG) wcslen(pStrSessionName) * WCHAR_BYTES + WCHAR_NULL_BYTES;
 
     iisLogSessionPropt.Wnode.Flags = WNODE_FLAG_TRACED_GUID;
     iisLogSessionPropt.Wnode.ClientContext = 1;
