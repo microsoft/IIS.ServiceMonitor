@@ -159,7 +159,7 @@ void EtwListner::StartListenIISEvent()
 ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
 {
     ULONG     uStatus = ERROR_SUCCESS;
-    DWORD	  dwThreadId;
+    DWORD     dwThreadId;
     HANDLE    pThreadHandle;
     EVENT_TRACE_PROPERTIES closeSessionPropt;
     EVENT_TRACE_PROPERTIES iisLogSessionPropt;
@@ -182,7 +182,10 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
 
     ZeroMemory(&iisLogSessionPropt, sizeof(EVENT_TRACE_PROPERTIES));
 
-    iisLogSessionPropt.Wnode.BufferSize = sizeof(EVENT_TRACE_PROPERTIES) + wcslen(pStrSessionName) * WCHAR_BYTES + WCHAR_NULL_BYTES;
+    // USHRT_MAX is an arbitrary limit but there's no reason why a sessionName
+    // should even approach it. A limit is needed to overcome buffer and 
+    // narrowing conversion problems. Even a UCHAR_MAX limit could work here.
+    iisLogSessionPropt.Wnode.BufferSize = (ULONG)(sizeof(EVENT_TRACE_PROPERTIES) + wcsnlen_s(pStrSessionName, USHRT_MAX) * WCHAR_BYTES + WCHAR_NULL_BYTES);
 
     iisLogSessionPropt.Wnode.Flags = WNODE_FLAG_TRACED_GUID;
     iisLogSessionPropt.Wnode.ClientContext = 1;
