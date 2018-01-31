@@ -27,7 +27,6 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
 {
     HRESULT hr = S_OK;
     Service_Monitor sm = Service_Monitor();
-    EtwListner etwlList = EtwListner();
 
     if (argc <= 1)
     {
@@ -56,24 +55,6 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
             _tprintf(L"\nFailed to update IIS configuration\n");
             goto Finished;
         }
-
-        if (configHelper.IISConsoleLoggingEnabled())
-        {
-            //
-            // continue to launch configHelper even without ETW Listener
-            //
-            hr = configHelper.EnableEtwLogging();
-            if (FAILED(hr))
-            {
-                _tprintf(L"\nERROR: Failed to enable IIS ETW Logging [%d]\n", hr);
-                hr = S_OK;
-            }
-            else
-            {
-                etwlList.StartListenIISEvent();
-            }
-        }
-
     }
 
     g_hStopEvent = CreateEvent(
