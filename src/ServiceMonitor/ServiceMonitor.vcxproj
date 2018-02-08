@@ -169,7 +169,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ServiceMonitor.rc" />
+    <ResourceCompile Include="ServiceMonitor.rc">
+      <PreprocessorDefinitions  Condition=" '$(BuildMinorVersion)' != '' ">SM_BUILDMINORVERSION=$(BuildMinorVersion)</PreprocessorDefinitions>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
