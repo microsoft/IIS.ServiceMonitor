@@ -121,10 +121,9 @@ Finished:
     return hr;
 }
 
-HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet, WCHAR* pstrAppPoolName, wstring** pStrCmd, BOOL fAddCommand)
+HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet, WCHAR* pstrAppPoolName, wstring** pStrCmd, BOOL fAddCommand, int* beginIndex)
 {
     HRESULT hr = S_OK;
-
     _ASSERT(strEnvName != NULL);
     _ASSERT(strEnvValue != NULL);
     _ASSERT(pstrAppPoolName != NULL);
@@ -138,10 +137,20 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet
     pstrCmd->append(m_pstrSysDirPath);
     pstrCmd->append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools ");
 
-    for (auto it = envSet.begin(); it != envSet.end(); ++it)
+    for (int i = *beginIndex; i < vecSet.size(); i++)
     {
-        wstring strEnvName = it->first;
-        wstring strEnvValue = it->second;
+
+        wstring strEnvName = vecSet[i].first;
+        wstring strEnvValue = vecSet[i].second;
+
+        if ((pstrCmd->length() + strEnvName.length() + strEnvValue.length()) > 30000)
+        {
+            //set the begin index for next iteration
+            *beginIndex = i;
+            _tprintf(L"\THIS COMMAND IS FULL\n");
+            break;
+        }
+
         if (fAddCommand)
         {
             pstrCmd->append(L"/+\"[name='");
@@ -160,6 +169,12 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(unordered_map<wstring, wstring> envSet
             pstrCmd->append(strEnvValue);
         }
         pstrCmd->append(L"']\" ");
+
+        if (i + 1 == vecSet.size())
+        {
+            //set to indicate it's done
+            *beginIndex = -1;
+        }
     }
     pstrCmd->append(L" /commit:apphost");
     *pStrCmd = pstrCmd;
@@ -227,9 +242,10 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     LPTSTR   lpszVariable = NULL;
     wstring* pstrAddCmd     = NULL;
     wstring* pstrRmCmd      = NULL;
+    int      beginIndex = 0;
 
     unordered_map<wstring, LPTSTR> filter;
-    unordered_map<wstring, wstring> envSet;
+    vector<pair<wstring, wstring>> envVec;
     POPULATE(filter) ;
 
     lpvEnv = GetEnvironmentStrings();
@@ -265,8 +281,8 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             wstring * pStrTempValue = new wstring();
             pStrTempValue->append(pstrValue);
 
-            envSet.insert(KV_WSTR(*pStrTempName, *pStrTempValue));
-            
+            envVec.emplace_back(*pStrTempName, *pStrTempValue);
+
             pEqualChar[0] = L'=';
 
         }
@@ -275,27 +291,36 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
         //
         lpszVariable += lstrlen(lpszVariable) + 1;
     }
-
-    hr = BuildAppCmdCommand(envSet, pstrAppPoolName, &pstrAddCmd, TRUE);
-    if (FAILED(hr))
+    while (beginIndex != -1)
     {
-        goto Finished;
+        hr = BuildAppCmdCommand1(envVec, pstrAppPoolName, &pstrRmCmd, FALSE, &beginIndex);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+
+        //allow appcmd to fail if it is trying to remove environment variable
+        RunCommand(pstrRmCmd, TRUE);
     }
 
-    hr = BuildAppCmdCommand(envSet, pstrAppPoolName, &pstrRmCmd, FALSE);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
+    beginIndex = 0;
 
-    //allow appcmd to fail if it is trying to remove environment variable
-    RunCommand(pstrRmCmd, TRUE);
-    //appcmd must success when add new environment variable
-    hr = RunCommand(pstrAddCmd, FALSE);
-
-    if (FAILED(hr))
+    while (beginIndex != -1)
     {
-        goto Finished;
+        hr = BuildAppCmdCommand1(envVec, pstrAppPoolName, &pstrAddCmd, TRUE, &beginIndex);
+
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+
+        //appcmd must success when add new environment variable
+        hr = RunCommand(pstrAddCmd, FALSE);
+
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
     }
 
 Finished:
