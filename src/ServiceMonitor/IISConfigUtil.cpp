@@ -147,7 +147,6 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet,
         {
             //set the begin index for next iteration
             *beginIndex = i;
-            _tprintf(L"\THIS COMMAND IS FULL\n");
             break;
         }
 
@@ -242,7 +241,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     LPTSTR   lpszVariable = NULL;
     wstring* pstrAddCmd     = NULL;
     wstring* pstrRmCmd      = NULL;
-    int      beginIndex = 0;
+    int      beginIndex    = 0;
 
     unordered_map<wstring, LPTSTR> filter;
     vector<pair<wstring, wstring>> envVec;
@@ -293,7 +292,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     }
     while (beginIndex != -1)
     {
-        hr = BuildAppCmdCommand1(envVec, pstrAppPoolName, &pstrRmCmd, FALSE, &beginIndex);
+        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, &pstrRmCmd, FALSE, &beginIndex);
         if (FAILED(hr))
         {
             goto Finished;
@@ -307,7 +306,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
 
     while (beginIndex != -1)
     {
-        hr = BuildAppCmdCommand1(envVec, pstrAppPoolName, &pstrAddCmd, TRUE, &beginIndex);
+        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, &pstrAddCmd, TRUE, &beginIndex);
 
         if (FAILED(hr))
         {

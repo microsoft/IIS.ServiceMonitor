@@ -18,8 +18,7 @@ public:
 
 private:
     HRESULT RunCommand(std::wstring * pstrCmd, BOOL fIgnoreError);
-    HRESULT BuildAppCmdCommand(std::unordered_map<std::wstring, std::wstring> envSet, WCHAR* pstrAppPoolName, std::wstring** pStrCmd, BOOL fAddCommand);
-    HRESULT BuildAppCmdCommand1(std::vector<std::pair<std::wstring, std::wstring>> vecSet, WCHAR* pstrAppPoolName, std::wstring** pStrCmd, BOOL fAddCommand, int* beginIndex);
+    HRESULT BuildAppCmdCommand(std::vector<std::pair<std::wstring, std::wstring>> vecSet, WCHAR* pstrAppPoolName, std::wstring** pStrCmd, BOOL fAddCommand, int* beginIndex);
     BOOL    FilterEnv(std::unordered_map<std::wstring, LPTSTR> filter, LPTSTR strEnvName, LPTSTR strEnvValue);
     TCHAR*  m_pstrSysDirPath;
 };
