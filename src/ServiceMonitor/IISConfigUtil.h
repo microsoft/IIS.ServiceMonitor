@@ -22,9 +22,9 @@ public:
     HRESULT UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName);
 
 private:
-    HRESULT RunCommand(std::wstring pstrCmd, BOOL fIgnoreError);
+    HRESULT RunCommand(std::wstring& pstrCmd, BOOL fIgnoreError);
     //HRESULT BuildAppCmdCommand(std::vector<std::pair<std::wstring, std::wstring>> vecSet, WCHAR* pstrAppPoolName, std::wstring** pStrCmd, APPCMD_CMD_TYPE appcmdType, int* beginIndex);
-    HRESULT BuildAppCmdCommand(std::vector<std::pair<std::wstring, std::wstring>> vecSet, WCHAR* pstrAppPoolName, std::wstring& pStrCmd, APPCMD_CMD_TYPE appcmdType, int* beginIndex);
+    HRESULT BuildAppCmdCommand(std::vector<std::pair<std::wstring, std::wstring>>& vecSet, std::vector<std::pair<std::wstring, std::wstring>>::iterator& envVecIter, WCHAR* pstrAppPoolName, std::wstring& pStrCmd, APPCMD_CMD_TYPE appcmdType);
     BOOL    FilterEnv(const std::unordered_map<std::wstring, LPTSTR>& filter, LPCTSTR strEnvName, LPCTSTR strEnvValue);
     TCHAR*  m_pstrSysDirPath;
 };

@@ -121,30 +121,22 @@ Finished:
     return hr;
 }
 
-HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet, WCHAR* pstrAppPoolName, wstring& pStrCmd, APPCMD_CMD_TYPE appCmdType, int* beginIndex)
+HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>>& vecSet, vector<pair<wstring, wstring>>::iterator& envVecIter, WCHAR* pstrAppPoolName, wstring& pStrCmd, APPCMD_CMD_TYPE appCmdType)
 {
     HRESULT hr = S_OK;
     _ASSERT(pstrAppPoolName != NULL);
 
-    //wstring* pstrCmd = new wstring();
-    //if (pstrCmd == NULL)
-    //{
-    //    hr = ERROR_OUTOFMEMORY;
-    //    goto Finished;
-    //}
-    
     pStrCmd.append(m_pstrSysDirPath);
     pStrCmd.append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools ");
 
-    for (int i = *beginIndex; i < vecSet.size(); i++)
+    for (; envVecIter != vecSet.end(); envVecIter++)
     {
-        wstring strEnvName = vecSet[i].first;
-        wstring strEnvValue = vecSet[i].second;
+        wstring strEnvName = (*envVecIter).first;
+        wstring strEnvValue = (*envVecIter).second;
 
         if ((pStrCmd.length() + strEnvName.length() + strEnvValue.length()) > APPCMD_MAX_SIZE)
         {
             //set the begin index for next iteration
-            *beginIndex = i;
             hr = ERROR_MORE_DATA;
             break;
         }
@@ -167,23 +159,15 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet,
             pStrCmd.append(strEnvValue);
         }
         pStrCmd.append(L"']\" ");
-
-        if (i + 1 == vecSet.size())
-        {
-            //set to indicate it's done
-            *beginIndex = -1;
-        }
     }
 
     pStrCmd.append(L" /commit:apphost");
-    //*pStrCmd = pstrCmd;
 
-Finished:
     return hr;
 }
 
 
-HRESULT IISConfigUtil::RunCommand(wstring pstrCmd, BOOL fIgnoreError)
+HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError)
 {
     HRESULT     hr       = S_OK;
     STARTUPINFO si       = { sizeof(STARTUPINFO) };
@@ -235,11 +219,12 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     LPTSTR   lpszVariable = NULL;
     wstring  pstrAddCmd;
     wstring  pstrRmCmd;
-    int      beginIndex    = 0;
     BOOL     fMoreData     = TRUE;
 
     unordered_map<wstring, LPTSTR> filter;
     vector<pair<wstring, wstring>> envVec;
+    vector<pair<wstring, wstring>>::iterator envVecIter;
+
     POPULATE(filter) ;
 
     lpvEnv = GetEnvironmentStrings();
@@ -270,13 +255,6 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
                 continue;
             }
 
-            /*
-            wstring pStrTempName;
-            pStrTempName.append(pstrName);
-            wstring pStrTempValue;;
-            pStrTempValue.append(pstrValue);
-            */
-
             envVec.emplace_back(wstring(pstrName), wstring(pstrValue));
 
             pEqualChar[0] = L'=';
@@ -288,12 +266,13 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
         lpszVariable += lstrlen(lpszVariable) + 1;
     }
     
+    envVecIter = envVec.begin();
     while (fMoreData)
     {
 
         pstrRmCmd.clear();
         fMoreData = FALSE;
-        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, pstrRmCmd, APPCMD_RM, &beginIndex);
+        hr = BuildAppCmdCommand(envVec, envVecIter, pstrAppPoolName, pstrRmCmd, APPCMD_RM);
 
         _tprintf(L" RM COMMAND \n");
 
@@ -312,13 +291,13 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     }
 
     fMoreData = TRUE;
-    beginIndex = 0;
+    envVecIter = envVec.begin();
     while (fMoreData)
     {
         _tprintf(L" ADD COMMAND \n");
         pstrAddCmd.clear();
         fMoreData = FALSE;
-        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, pstrAddCmd, APPCMD_ADD, &beginIndex);
+        hr = BuildAppCmdCommand(envVec, envVecIter, pstrAppPoolName, pstrAddCmd, APPCMD_ADD);
 
         if (hr != ERROR_MORE_DATA && FAILED(hr))
         {
