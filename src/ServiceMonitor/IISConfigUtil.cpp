@@ -55,17 +55,16 @@ IISConfigUtil::~IISConfigUtil()
     }
 }
 
-BOOL IISConfigUtil::FilterEnv(unordered_map<wstring, LPTSTR> filter, LPTSTR strEnvName, LPTSTR strEnvValue)
+BOOL IISConfigUtil::FilterEnv(const unordered_map<wstring, LPTSTR>& filter, LPCTSTR strEnvName, LPCTSTR strEnvValue)
 {
     LPTSTR   strFilterValue;
     wstring strFilterName;
     _ASSERT(strEnvName != NULL);
     _ASSERT(strEnvValue != NULL);
 
-    CharUpper(strEnvName);
     strFilterName = strEnvName;
-    auto value = filter.find(strFilterName);
-    if (value == filter.end())
+    auto value = (filter).find(strFilterName);
+    if (value == (filter).end())
     {
         return FALSE;
     }
@@ -122,29 +121,27 @@ Finished:
     return hr;
 }
 
-HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet, WCHAR* pstrAppPoolName, wstring** pStrCmd, APPCMD_CMD_TYPE appCmdType, int* beginIndex)
+HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet, WCHAR* pstrAppPoolName, wstring& pStrCmd, APPCMD_CMD_TYPE appCmdType, int* beginIndex)
 {
     HRESULT hr = S_OK;
-    _ASSERT(strEnvName != NULL);
-    _ASSERT(strEnvValue != NULL);
     _ASSERT(pstrAppPoolName != NULL);
 
-    wstring* pstrCmd = new wstring();
-    if (pstrCmd == NULL)
-    {
-        hr = ERROR_OUTOFMEMORY;
-        goto Finished;
-    }
-    pstrCmd->append(m_pstrSysDirPath);
-    pstrCmd->append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools ");
+    //wstring* pstrCmd = new wstring();
+    //if (pstrCmd == NULL)
+    //{
+    //    hr = ERROR_OUTOFMEMORY;
+    //    goto Finished;
+    //}
+    
+    pStrCmd.append(m_pstrSysDirPath);
+    pStrCmd.append(L"\\inetsrv\\appcmd.exe set config -section:system.applicationHost/applicationPools ");
 
     for (int i = *beginIndex; i < vecSet.size(); i++)
     {
-
         wstring strEnvName = vecSet[i].first;
         wstring strEnvValue = vecSet[i].second;
 
-        if ((pstrCmd->length() + strEnvName.length() + strEnvValue.length()) > APPCMD_MAX_SIZE)
+        if ((pStrCmd.length() + strEnvName.length() + strEnvValue.length()) > APPCMD_MAX_SIZE)
         {
             //set the begin index for next iteration
             *beginIndex = i;
@@ -152,24 +149,24 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet,
             break;
         }
 
-        if (appCmdType = APPCMD_ADD)
+        if (appCmdType == APPCMD_ADD)
         {
-            pstrCmd->append(L"/+\"[name='");
+            pStrCmd.append(L"/+\"[name='");
         }
         else
         {
-            pstrCmd->append(L"/-\"[name='");
+            pStrCmd.append(L"/-\"[name='");
 
         }
-        pstrCmd->append(pstrAppPoolName);
-        pstrCmd->append(L"'].environmentVariables.[name='");
-        pstrCmd->append(strEnvName);
-        if (appCmdType = APPCMD_ADD)
+        pStrCmd.append(pstrAppPoolName);
+        pStrCmd.append(L"'].environmentVariables.[name='");
+        pStrCmd.append(strEnvName);
+        if (appCmdType == APPCMD_ADD)
         {
-            pstrCmd->append(L"',value='");
-            pstrCmd->append(strEnvValue);
+            pStrCmd.append(L"',value='");
+            pStrCmd.append(strEnvValue);
         }
-        pstrCmd->append(L"']\" ");
+        pStrCmd.append(L"']\" ");
 
         if (i + 1 == vecSet.size())
         {
@@ -177,15 +174,16 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet,
             *beginIndex = -1;
         }
     }
-    pstrCmd->append(L" /commit:apphost");
-    *pStrCmd = pstrCmd;
+
+    pStrCmd.append(L" /commit:apphost");
+    //*pStrCmd = pstrCmd;
 
 Finished:
     return hr;
 }
 
 
-HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd, BOOL fIgnoreError)
+HRESULT IISConfigUtil::RunCommand(wstring pstrCmd, BOOL fIgnoreError)
 {
     HRESULT     hr       = S_OK;
     STARTUPINFO si       = { sizeof(STARTUPINFO) };
@@ -194,10 +192,10 @@ HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd, BOOL fIgnoreError)
 
     ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
-    si.dwFlags |= STARTF_USESTDHANDLES;
-
+    //si.dwFlags |= STARTF_USESTDHANDLES;
+    wcout << pstrCmd << endl;
     if (!CreateProcess(NULL,
-        (LPWSTR)pstrCmd->c_str(),
+        (LPWSTR)pstrCmd.c_str(),
         NULL,
         NULL,
         false,
@@ -227,12 +225,6 @@ HRESULT IISConfigUtil::RunCommand(wstring * pstrCmd, BOOL fIgnoreError)
 
 Finished:
 
-    if (pstrCmd != NULL)
-    {
-        delete pstrCmd;
-        pstrCmd = NULL;
-    }
-
     return hr;
 }
 
@@ -241,10 +233,10 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     HRESULT  hr           = S_OK;
     LPTCH    lpvEnv       = NULL;
     LPTSTR   lpszVariable = NULL;
-    wstring* pstrAddCmd     = NULL;
-    wstring* pstrRmCmd      = NULL;
+    wstring  pstrAddCmd;
+    wstring  pstrRmCmd;
     int      beginIndex    = 0;
-    BOOL     fMoreData     = FALSE;
+    BOOL     fMoreData     = TRUE;
 
     unordered_map<wstring, LPTSTR> filter;
     vector<pair<wstring, wstring>> envVec;
@@ -261,7 +253,6 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     lpszVariable = (LPTSTR)lpvEnv;
     while (*lpszVariable)
     {
-
         LPTSTR pEqualChar = wcschr(lpszVariable, L'=');
         if (pEqualChar != lpszVariable)
         {
@@ -271,19 +262,22 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
 
 
             pEqualChar[0] = L'\0';
-            if (FilterEnv(filter, pstrName, pstrValue))
+            if (FilterEnv(filter, CharUpper(pstrName), pstrValue))
             {
                 pEqualChar[0] = L'=';
                 lpszVariable += lstrlen(lpszVariable) + 1;
                 
                 continue;
             }
-            wstring * pStrTempName = new wstring();
-            pStrTempName->append(pstrName);
-            wstring * pStrTempValue = new wstring();
-            pStrTempValue->append(pstrValue);
 
-            envVec.emplace_back(*pStrTempName, *pStrTempValue);
+            /*
+            wstring pStrTempName;
+            pStrTempName.append(pstrName);
+            wstring pStrTempValue;;
+            pStrTempValue.append(pstrValue);
+            */
+
+            envVec.emplace_back(wstring(pstrName), wstring(pstrValue));
 
             pEqualChar[0] = L'=';
 
@@ -293,10 +287,15 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
         //
         lpszVariable += lstrlen(lpszVariable) + 1;
     }
+    
     while (fMoreData)
     {
+
+        pstrRmCmd.clear();
         fMoreData = FALSE;
-        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, &pstrRmCmd, APPCMD_RM, &beginIndex);
+        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, pstrRmCmd, APPCMD_RM, &beginIndex);
+
+        _tprintf(L" RM COMMAND \n");
 
         if (hr != ERROR_MORE_DATA && FAILED(hr))
         {
@@ -308,16 +307,18 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             hr = S_OK;
             fMoreData = TRUE;
         }
-
         //allow appcmd to fail if it is trying to remove environment variable
         RunCommand(pstrRmCmd, TRUE);
     }
 
-
+    fMoreData = TRUE;
+    beginIndex = 0;
     while (fMoreData)
     {
+        _tprintf(L" ADD COMMAND \n");
+        pstrAddCmd.clear();
         fMoreData = FALSE;
-        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, &pstrAddCmd, APPCMD_ADD, &beginIndex);
+        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, pstrAddCmd, APPCMD_ADD, &beginIndex);
 
         if (hr != ERROR_MORE_DATA && FAILED(hr))
         {
