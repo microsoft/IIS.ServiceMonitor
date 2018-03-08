@@ -58,20 +58,26 @@ IISConfigUtil::~IISConfigUtil()
 BOOL IISConfigUtil::FilterEnv(const unordered_map<wstring, LPTSTR>& filter, LPCTSTR strEnvName, LPCTSTR strEnvValue)
 {
     LPTSTR   strFilterValue;
-    wstring strFilterName;
     _ASSERT(strEnvName != NULL);
     _ASSERT(strEnvValue != NULL);
 
-    strFilterName = strEnvName;
-    auto value = (filter).find(strFilterName);
-    if (value == (filter).end())
+    auto value = filter.find(strEnvName);
+
+    //
+    // add this environment variable if the name does not match the block list
+    //
+    if (value == filter.end())
     {
         return FALSE;
     }
     
     strFilterValue = value->second;
 
-    //don't need to match value or value match
+    //
+    //  filter out this environment variable if
+    //  1. value match is not required (strFilterValue is NULL)
+    //  2. require value match and value matches
+    //
     if ((strFilterValue == NULL ) || (lstrcmpi(strEnvValue, strFilterValue) == 0))
     {
         return TRUE;
@@ -85,13 +91,16 @@ HRESULT IISConfigUtil::Initialize()
     HRESULT hr        = S_OK;
     TCHAR*  pBuffer   = NULL;
     DWORD   dwBufSize = 0;
+
     //
     // resolve system drive
     //
     dwBufSize = GetSystemDirectory(NULL, 0);
     if (dwBufSize == 0)
     {
+        //
         // failed to get System Directory info
+        //
         hr = HRESULT_FROM_WIN32(GetLastError());
         goto Finished;
     }
@@ -121,7 +130,7 @@ Finished:
     return hr;
 }
 
-HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>>& vecSet, vector<pair<wstring, wstring>>::iterator& envVecIter, WCHAR* pstrAppPoolName, wstring& pStrCmd, APPCMD_CMD_TYPE appCmdType)
+HRESULT IISConfigUtil::BuildAppCmdCommand(const vector<pair<wstring, wstring>>& vecSet, vector<pair<wstring, wstring>>::iterator& envVecIter, WCHAR* pstrAppPoolName, wstring& pStrCmd, APPCMD_CMD_TYPE appCmdType)
 {
     HRESULT hr = S_OK;
     _ASSERT(pstrAppPoolName != NULL);
@@ -131,12 +140,15 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>>& vecSet
 
     for (; envVecIter != vecSet.end(); envVecIter++)
     {
-        wstring strEnvName = (*envVecIter).first;
-        wstring strEnvValue = (*envVecIter).second;
+        wstring strEnvName  = envVecIter->first;
+        wstring strEnvValue = envVecIter->second;
 
         if ((pStrCmd.length() + strEnvName.length() + strEnvValue.length()) > APPCMD_MAX_SIZE)
         {
-            //set the begin index for next iteration
+            //
+            // caller need to call again
+            //
+
             hr = ERROR_MORE_DATA;
             break;
         }
@@ -148,7 +160,6 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>>& vecSet
         else
         {
             pStrCmd.append(L"/-\"[name='");
-
         }
         pStrCmd.append(pstrAppPoolName);
         pStrCmd.append(L"'].environmentVariables.[name='");
@@ -193,7 +204,9 @@ HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError)
         goto Finished;
     }
 
+    //
     // wait for at most 5 seconds to allow APPCMD finish
+    //
     WaitForSingleObject(pi.hProcess, 5000);
     if ((!GetExitCodeProcess(pi.hProcess, &dwStatus) || dwStatus != 0) && (!fIgnoreError))
     {
@@ -286,7 +299,10 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             hr = S_OK;
             fMoreData = TRUE;
         }
+
+        //
         //allow appcmd to fail if it is trying to remove environment variable
+        //
         RunCommand(pstrRmCmd, TRUE);
     }
 
@@ -310,7 +326,9 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             fMoreData = TRUE;
         }
 
+        //
         //appcmd must succeed when add new environment variables
+        //
         hr = RunCommand(pstrAddCmd, FALSE);
 
         if (FAILED(hr))
