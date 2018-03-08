@@ -6,6 +6,11 @@
 #include <Windows.h>
 #include <unordered_map>
 
+enum APPCMD_CMD_TYPE
+{
+    APPCMD_ADD = 0,
+    APPCMD_RM = 1
+};
 
 class IISConfigUtil
 {
@@ -18,7 +23,8 @@ public:
 
 private:
     HRESULT RunCommand(std::wstring * pstrCmd, BOOL fIgnoreError);
-    HRESULT BuildAppCmdCommand(std::vector<std::pair<std::wstring, std::wstring>> vecSet, WCHAR* pstrAppPoolName, std::wstring** pStrCmd, BOOL fAddCommand, int* beginIndex);
+    HRESULT BuildAppCmdCommand(std::vector<std::pair<std::wstring, std::wstring>> vecSet, WCHAR* pstrAppPoolName, std::wstring** pStrCmd, APPCMD_CMD_TYPE appcmdType, int* beginIndex);
     BOOL    FilterEnv(std::unordered_map<std::wstring, LPTSTR> filter, LPTSTR strEnvName, LPTSTR strEnvValue);
     TCHAR*  m_pstrSysDirPath;
 };
+

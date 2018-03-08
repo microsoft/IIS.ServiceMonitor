@@ -5,6 +5,7 @@
 #include <iostream>
 using namespace std;
 
+#define APPCMD_MAX_SIZE 30000
 #define KV(a,b) pair<wstring, LPTSTR>(a,b)
 #define KV_WSTR(a,b) pair<wstring, wstring>(a,b)
 #define POPULATE(map) do                          \
@@ -121,7 +122,7 @@ Finished:
     return hr;
 }
 
-HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet, WCHAR* pstrAppPoolName, wstring** pStrCmd, BOOL fAddCommand, int* beginIndex)
+HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet, WCHAR* pstrAppPoolName, wstring** pStrCmd, APPCMD_CMD_TYPE appCmdType, int* beginIndex)
 {
     HRESULT hr = S_OK;
     _ASSERT(strEnvName != NULL);
@@ -143,14 +144,15 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet,
         wstring strEnvName = vecSet[i].first;
         wstring strEnvValue = vecSet[i].second;
 
-        if ((pstrCmd->length() + strEnvName.length() + strEnvValue.length()) > 30000)
+        if ((pstrCmd->length() + strEnvName.length() + strEnvValue.length()) > APPCMD_MAX_SIZE)
         {
             //set the begin index for next iteration
             *beginIndex = i;
+            hr = ERROR_MORE_DATA;
             break;
         }
 
-        if (fAddCommand)
+        if (appCmdType = APPCMD_ADD)
         {
             pstrCmd->append(L"/+\"[name='");
         }
@@ -162,7 +164,7 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(vector<pair<wstring, wstring>> vecSet,
         pstrCmd->append(pstrAppPoolName);
         pstrCmd->append(L"'].environmentVariables.[name='");
         pstrCmd->append(strEnvName);
-        if (fAddCommand)
+        if (appCmdType = APPCMD_ADD)
         {
             pstrCmd->append(L"',value='");
             pstrCmd->append(strEnvValue);
@@ -242,6 +244,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     wstring* pstrAddCmd     = NULL;
     wstring* pstrRmCmd      = NULL;
     int      beginIndex    = 0;
+    BOOL     fMoreData     = FALSE;
 
     unordered_map<wstring, LPTSTR> filter;
     vector<pair<wstring, wstring>> envVec;
@@ -290,30 +293,44 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
         //
         lpszVariable += lstrlen(lpszVariable) + 1;
     }
-    while (beginIndex != -1)
+    while (fMoreData)
     {
-        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, &pstrRmCmd, FALSE, &beginIndex);
-        if (FAILED(hr))
+        fMoreData = FALSE;
+        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, &pstrRmCmd, APPCMD_RM, &beginIndex);
+
+        if (hr != ERROR_MORE_DATA && FAILED(hr))
         {
-            goto Finished;
+                goto Finished;
+        }
+
+        if (hr == ERROR_MORE_DATA)
+        {
+            hr = S_OK;
+            fMoreData = TRUE;
         }
 
         //allow appcmd to fail if it is trying to remove environment variable
         RunCommand(pstrRmCmd, TRUE);
     }
 
-    beginIndex = 0;
 
-    while (beginIndex != -1)
+    while (fMoreData)
     {
-        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, &pstrAddCmd, TRUE, &beginIndex);
+        fMoreData = FALSE;
+        hr = BuildAppCmdCommand(envVec, pstrAppPoolName, &pstrAddCmd, APPCMD_ADD, &beginIndex);
 
-        if (FAILED(hr))
+        if (hr != ERROR_MORE_DATA && FAILED(hr))
         {
             goto Finished;
         }
 
-        //appcmd must success when add new environment variable
+        if (hr == ERROR_MORE_DATA)
+        {
+            hr = S_OK;
+            fMoreData = TRUE;
+        }
+
+        //appcmd must succeed when add new environment variables
         hr = RunCommand(pstrAddCmd, FALSE);
 
         if (FAILED(hr))
