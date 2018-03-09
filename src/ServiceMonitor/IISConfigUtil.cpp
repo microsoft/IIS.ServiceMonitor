@@ -187,8 +187,8 @@ HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError)
 
     ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
-    //si.dwFlags |= STARTF_USESTDHANDLES;
-    wcout << pstrCmd << endl;
+    si.dwFlags |= STARTF_USESTDHANDLES;
+
     if (!CreateProcess(NULL,
         (LPWSTR)pstrCmd.c_str(),
         NULL,
@@ -287,8 +287,6 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
         fMoreData = FALSE;
         hr = BuildAppCmdCommand(envVec, envVecIter, pstrAppPoolName, pstrRmCmd, APPCMD_RM);
 
-        _tprintf(L" RM COMMAND \n");
-
         if (hr != ERROR_MORE_DATA && FAILED(hr))
         {
                 goto Finished;
@@ -310,7 +308,6 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     envVecIter = envVec.begin();
     while (fMoreData)
     {
-        _tprintf(L" ADD COMMAND \n");
         pstrAddCmd.clear();
         fMoreData = FALSE;
         hr = BuildAppCmdCommand(envVec, envVecIter, pstrAppPoolName, pstrAddCmd, APPCMD_ADD);
