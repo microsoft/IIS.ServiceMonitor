@@ -59,7 +59,7 @@ for those Environment variable / value pairs present in this list below.
 .\ServiceMonitor.exe w3svc
 ```
 
-ServiceMonitor is currently distributed as part of the[IIS](https://github.com/microsoft/iis-docker),
+ServiceMonitor is currently distributed as part of the [IIS](https://github.com/microsoft/iis-docker),
 [ASP.NET](https://github.com/microsoft/aspnet-docker), and [WCF](https://github.com/microsoft/wcf-docker) images on DockerHub. We recommend layering your project on top of those official images as running
 ServiceMonitor directly in your Dockerfile. 
 
