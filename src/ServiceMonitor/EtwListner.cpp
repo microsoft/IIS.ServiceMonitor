@@ -133,7 +133,7 @@ ProcessEtwThreadProc(
 
     if (uStatus != ERROR_SUCCESS)
     {
-        _tprintf(L"ProcessTrace FAIL %i\n", uStatus);
+        _tprintf(L"ProcessTrace FAIL %i\n %i", uStatus, pValue);
         return NULL;
     }
 
@@ -266,7 +266,9 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
         goto finish;
     }
 
-    _tprintf(L"Start Listen to IIS Etw Logs...\n");
+    std::wcout << "^^^" << std::endl;
+    //_tprintf(L"Start Listen to IIS Etw Logs...\n");
+    //_tprintf(L"Start Listen to IIS Etw Logs...\n");
     //fflush(stdout);
 
 finish:
