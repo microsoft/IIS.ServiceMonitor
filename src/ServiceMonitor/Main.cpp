@@ -62,7 +62,7 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
             //
             // continue to launch configHelper even without ETW Listener
             //
-            //hr = configHelper.EnableEtwLogging();
+            hr = configHelper.EnableEtwLogging();
             if (FAILED(hr))
             {
                 _tprintf(L"\nERROR: Failed to enable IIS ETW Logging [%d]\n", hr);

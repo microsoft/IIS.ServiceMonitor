@@ -20,11 +20,16 @@ public:
     ~IISConfigUtil();
     HRESULT Initialize();
     HRESULT UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName);
+    HRESULT EnableEtwLogging();
+    BOOL    IISConsoleLoggingEnabled();
 
 private:
+
     HRESULT RunCommand(std::wstring& pstrCmd, BOOL fIgnoreError);
     HRESULT BuildAppCmdCommand(const std::vector<std::pair<std::wstring, std::wstring>>& vecSet, std::vector<std::pair<std::wstring, std::wstring>>::iterator& envVecIter, WCHAR* pstrAppPoolName, std::wstring& pStrCmd, APPCMD_CMD_TYPE appcmdType);
     BOOL    FilterEnv(const std::unordered_map<std::wstring, LPTSTR>& filter, LPCTSTR strEnvName, LPCTSTR strEnvValue);
+    BOOL    NameValuePairExists(const std::vector<std::pair<std::wstring, std::wstring>>& vecSet, LPCTSTR strName, LPCTSTR strValue);
     TCHAR*  m_pstrSysDirPath;
+    BOOL    fIISConsoleLoggingEnabled;
 };
 

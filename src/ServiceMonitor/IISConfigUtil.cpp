@@ -3,6 +3,7 @@
 
 #include"stdafx.h"
 #include <iostream>
+#include <algorithm>
 using namespace std;
 #define ENABLE_IIS_CONSOLE_LOGGING_NAME  L"ENABLE_IIS_CONSOLE_LOGGING"
 #define ENV_ENABLED                      L"1"
@@ -55,7 +56,28 @@ IISConfigUtil::~IISConfigUtil()
         m_pstrSysDirPath = NULL;
     }
 }
+BOOL IISConfigUtil::IISConsoleLoggingEnabled()
+{
+    return fIISConsoleLoggingEnabled;
+}
 
+HRESULT IISConfigUtil::EnableEtwLogging()
+{
+    HRESULT hr = S_OK;
+
+    //
+    // wstring will be freed in RunCommand
+    //
+    wstring strLoggingConfigCommand = wstring(m_pstrSysDirPath);
+    strLoggingConfigCommand.append(L"\\inetsrv\\appcmd.exe set config  -section:system.applicationHost/sites /\"[name = \'Default Web Site\'].logFile.logTargetW3C:ETW, File\"");
+    return RunCommand(strLoggingConfigCommand, FALSE);
+}
+BOOL IISConfigUtil::NameValuePairExists(const vector<pair<wstring, wstring>>& vecSet, LPCTSTR strName, LPCTSTR strValue)
+{
+    if (std::find(vecSet.begin(), vecSet.end(), pair<wstring, wstring>(wstring(strName), wstring(strValue))) != vecSet.end())
+        return TRUE;
+    return FALSE;
+}
 BOOL IISConfigUtil::FilterEnv(const unordered_map<wstring, LPTSTR>& filter, LPCTSTR strEnvName, LPCTSTR strEnvValue)
 {
     LPTSTR   strFilterValue;
@@ -279,7 +301,8 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
         //
         lpszVariable += lstrlen(lpszVariable) + 1;
     }
-    
+
+    NameValuePairExists(envVec, ENABLE_IIS_CONSOLE_LOGGING_NAME, ENV_ENABLED);
     envVecIter = envVec.begin();
     while (fMoreData)
     {
