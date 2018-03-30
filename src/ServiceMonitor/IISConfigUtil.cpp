@@ -4,7 +4,8 @@
 #include"stdafx.h"
 #include <iostream>
 using namespace std;
-
+#define ENABLE_IIS_CONSOLE_LOGGING_NAME  L"ENABLE_IIS_CONSOLE_LOGGING"
+#define ENV_ENABLED                      L"1"
 #define APPCMD_MAX_SIZE 30000
 #define KV(a,b) pair<wstring, LPTSTR>(a,b)
 #define KV_WSTR(a,b) pair<wstring, wstring>(a,b)
