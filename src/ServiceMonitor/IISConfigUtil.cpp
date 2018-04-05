@@ -211,7 +211,7 @@ HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError)
     ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
     si.dwFlags |= STARTF_USESTDHANDLES;
-
+    wcout << pstrCmd << endl;
     if (!CreateProcess(NULL,
         (LPWSTR)pstrCmd.c_str(),
         NULL,

@@ -24,11 +24,13 @@ IISLoggingEvtRecCallback(
     __in PEVENT_RECORD pEvtRecord
 )
 {
-    std::wcout << "AAAAAAAAAAAAAAAAAAAA" << std::endl;
+
+    int b = 0;
+    int a = 1 / b;
+    //std::wcout << L"AAAAAAAAAAAAAAAAAAAA" << a <<  std::endl;
     USHORT      UserDataLength = pEvtRecord->UserDataLength;
     PVOID       UserData = pEvtRecord->UserData;
     PVOID       userDataEnd = (char *)UserData + UserDataLength;
-
     //
     // Read Raw Data
     //
@@ -70,21 +72,25 @@ IISLoggingEvtRecCallback(
         , date, time, siteName, computerName, serverIP
     );
 
+    /*
     printf(""
         "cs-method %s "
         , method
     );
+    */
 
     _tprintf(L""
         "cs-uri-stem %s "
         , uriStem
     );
 
+    /*
     printf(""
         "cs-uri-query %s "
         "port %d "
         , uriQuery, *port
     );
+    */
 
     _tprintf(L""
         "cs-user-name %s "
@@ -93,6 +99,7 @@ IISLoggingEvtRecCallback(
         , userName, clientIP, protocolVer
     );
 
+    /*
     printf(""
         "cs(User-Agent) %s "
         "cs(Cookie) %s "
@@ -106,6 +113,7 @@ IISLoggingEvtRecCallback(
         "time-taken %I64u "
         , userAgent, cookie, referer, host, *protocolStatus, *protocolSubStatus, *win32Status, *bytesSent, *bytesReceived, *timeTaken
     );
+    */
 
     _tprintf(L""
         "%s"
@@ -113,7 +121,8 @@ IISLoggingEvtRecCallback(
     );
 
     _tprintf(L"\n\n");
-    //fflush(stdout);
+    std::wcout << fflush(stdout) << std::endl;
+    std::wcout<<L">>"<<std::endl;
     return;
 }
 
@@ -136,6 +145,8 @@ ProcessEtwThreadProc(
         _tprintf(L"ProcessTrace FAIL %i\n %i", uStatus, pValue);
         return NULL;
     }
+    _tprintf(L"65555555555555555555555555555 %i\n %i", uStatus, pValue);
+    std::wcout << L"66666666666666666666666" << std::endl;
 
     return NULL;
 }
@@ -267,6 +278,7 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
     }
 
     std::wcout << "^^^" << std::endl;
+    Sleep(6 * 1000);
     //_tprintf(L"Start Listen to IIS Etw Logs...\n");
     //_tprintf(L"Start Listen to IIS Etw Logs...\n");
     //fflush(stdout);
