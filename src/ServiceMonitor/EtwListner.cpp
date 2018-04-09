@@ -25,9 +25,6 @@ IISLoggingEvtRecCallback(
 )
 {
 
-    int b = 0;
-    int a = 1 / b;
-    //std::wcout << L"AAAAAAAAAAAAAAAAAAAA" << a <<  std::endl;
     USHORT      UserDataLength = pEvtRecord->UserDataLength;
     PVOID       UserData = pEvtRecord->UserData;
     PVOID       userDataEnd = (char *)UserData + UserDataLength;
@@ -72,25 +69,21 @@ IISLoggingEvtRecCallback(
         , date, time, siteName, computerName, serverIP
     );
 
-    /*
     printf(""
         "cs-method %s "
         , method
     );
-    */
 
     _tprintf(L""
         "cs-uri-stem %s "
         , uriStem
     );
 
-    /*
     printf(""
         "cs-uri-query %s "
         "port %d "
         , uriQuery, *port
     );
-    */
 
     _tprintf(L""
         "cs-user-name %s "
@@ -99,7 +92,6 @@ IISLoggingEvtRecCallback(
         , userName, clientIP, protocolVer
     );
 
-    /*
     printf(""
         "cs(User-Agent) %s "
         "cs(Cookie) %s "
@@ -113,16 +105,13 @@ IISLoggingEvtRecCallback(
         "time-taken %I64u "
         , userAgent, cookie, referer, host, *protocolStatus, *protocolSubStatus, *win32Status, *bytesSent, *bytesReceived, *timeTaken
     );
-    */
 
     _tprintf(L""
         "%s"
         , customFields
     );
-
     _tprintf(L"\n\n");
-    std::wcout << fflush(stdout) << std::endl;
-    std::wcout<<L">>"<<std::endl;
+    fflush(stdout);
     return;
 }
 
@@ -145,8 +134,6 @@ ProcessEtwThreadProc(
         _tprintf(L"ProcessTrace FAIL %i\n %i", uStatus, pValue);
         return NULL;
     }
-    _tprintf(L"65555555555555555555555555555 %i\n %i", uStatus, pValue);
-    std::wcout << L"66666666666666666666666" << std::endl;
 
     return NULL;
 }
@@ -178,8 +165,7 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
     EVENT_TRACE_PROPERTIES iisLogSessionPropt;
 
     //TRACEHANDLE handle;
-
-    TRACEHANDLE hTrace;
+    TRACEHANDLE * hTrace1 = (TRACEHANDLE *)LocalAlloc(LMEM_FIXED, sizeof(TRACEHANDLE));
 
     //
     // stop the trace if the trace already started
@@ -210,14 +196,14 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
 
     EVENT_TRACE_LOGFILE eventTraceLog = { 0 };
 
-    uStatus = StartTrace((PTRACEHANDLE)&hTrace, pStrSessionName, &iisLogSessionPropt);
+    uStatus = StartTrace((PTRACEHANDLE)hTrace1, pStrSessionName, &iisLogSessionPropt);
     if (uStatus != ERROR_SUCCESS)
     {
         _tprintf(L"START TRACE FAIL %i\n", uStatus);
         goto finish;
     }
 
-    uStatus = EnableTraceEx2(hTrace,
+    uStatus = EnableTraceEx2(*hTrace1,
         (LPCGUID)pTraceGUID,
         EVENT_CONTROL_CODE_ENABLE_PROVIDER,
         TRACE_LEVEL_INFORMATION,
@@ -255,8 +241,8 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
     // reuse the hTrace handle variable
     //
 
-    hTrace = OpenTrace(&eventTraceLog);
-    if (hTrace == INVALID_PROCESSTRACE_HANDLE)
+    *hTrace1 = OpenTrace(&eventTraceLog);
+    if (*hTrace1 == INVALID_PROCESSTRACE_HANDLE)
     {
         uStatus = GetLastError();
         _tprintf(L"OPEN TRACE FAIL %i\n", uStatus);
@@ -266,7 +252,7 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
     pThreadHandle = CreateThread(NULL,
         0x2000000,
         ProcessEtwThreadProc,
-        (LPVOID)&hTrace,
+        (LPVOID)hTrace1,
         0,
         &dwThreadId);
 
@@ -277,11 +263,8 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
         goto finish;
     }
 
-    std::wcout << "^^^" << std::endl;
-    Sleep(6 * 1000);
-    //_tprintf(L"Start Listen to IIS Etw Logs...\n");
-    //_tprintf(L"Start Listen to IIS Etw Logs...\n");
-    //fflush(stdout);
+    fflush(stdout); 
+    //Sleep(6 * 1000);
 
 finish:
 
