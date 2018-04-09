@@ -138,16 +138,12 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
             while (dwRemainTime >0)
             {
                 DWORD     dwBytes = 0;
-                _tprintf(L"\n FUnction Begin'%s' error [%x]\n", pServiceName, hr);
-
                 if (!QueryServiceStatusEx(hService,
                     SC_STATUS_PROCESS_INFO,
                     (LPBYTE)&sStatus,
                     sizeof(SERVICE_STATUS_PROCESS),
                     &dwBytes))
                 {
-                    _tprintf(L"\n The Second Query Failed'%s' error [%x]\n", pServiceName, hr);
-
                     hr = HRESULT_FROM_WIN32(GetLastError());
                     goto Finished;
                 }
@@ -175,7 +171,6 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
                     //
                     // Service fails to stop 
                     //
-                    _tprintf(L"\n ACTUAL STOP REQUEST '%s' error [%x]  [%x]\n", pServiceName, hr, sStatus.dwCurrentState);
                     hr = E_FAIL;
                     goto Finished;
                 }
