@@ -135,39 +135,9 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
         hr = GetServiceHandle(pServiceName, &hService);
         if (SUCCEEDED(hr)) 
         {
-            if (!QueryServiceStatusEx(hService,
-                SC_STATUS_PROCESS_INFO,
-                (LPBYTE)&sStatus,
-                sizeof(SERVICE_STATUS_PROCESS),
-                &dwBytes))
-            {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-                goto Finished;
-            }
-
-            if (sStatus.dwCurrentState == SERVICE_STOPPED) 
-            {
-                //
-                // Service has already been stopped, no action needed
-                //
-                goto Finished;
-            }
-            else if (sStatus.dwCurrentState != SERVICE_STOP_PENDING)
-            {
-                //
-                // Sending stop signal
-                //
-                if (!ControlService(hService, SERVICE_CONTROL_STOP, (LPSERVICE_STATUS)&sStatus))
-                {
-                    hr = HRESULT_FROM_WIN32(GetLastError());
-                    goto Finished;
-                }
-            }
-
             while (dwRemainTime >0)
             {
                 DWORD     dwBytes = 0;
-
                 if (!QueryServiceStatusEx(hService,
                     SC_STATUS_PROCESS_INFO,
                     (LPBYTE)&sStatus,
@@ -181,12 +151,20 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
                 {
                     goto Finished;
                 }
-                else if (sStatus.dwCurrentState == SERVICE_STOP_PENDING)
+                else if (sStatus.dwCurrentState == SERVICE_STOP_PENDING || sStatus.dwCurrentState == SERVICE_START_PENDING || sStatus.dwCurrentState == SERVICE_PAUSE_PENDING || sStatus.dwCurrentState == SERVICE_CONTINUE_PENDING)
                 {
                     dwSleepTime = rand() % 10 + 1;
                     dwSleepTime = dwSleepTime < dwRemainTime ? dwSleepTime : dwRemainTime;
                     dwRemainTime -= dwSleepTime;
                     Sleep(dwSleepTime * 1000);
+                }
+                else if (sStatus.dwCurrentState == SERVICE_RUNNING || sStatus.dwCurrentState == SERVICE_PAUSED)
+                {
+                    if (!ControlService(hService, SERVICE_CONTROL_STOP, (LPSERVICE_STATUS)&sStatus))
+                    {
+                        hr = HRESULT_FROM_WIN32(GetLastError());
+                        goto Finished;
+                    }
                 }
                 else
                 {
