@@ -111,6 +111,11 @@ IISLoggingEvtRecCallback(
         , customFields
     );
     _tprintf(L"\n\n");
+
+    //
+    // flush the output buffer 
+    //
+
     fflush(stdout);
     return;
 }
@@ -165,7 +170,7 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
     EVENT_TRACE_PROPERTIES iisLogSessionPropt;
 
     //TRACEHANDLE handle;
-    TRACEHANDLE * hTrace1 = (TRACEHANDLE *)LocalAlloc(LMEM_FIXED, sizeof(TRACEHANDLE));
+    TRACEHANDLE * pIISTrace = (TRACEHANDLE *)LocalAlloc(LMEM_FIXED, sizeof(TRACEHANDLE));
 
     //
     // stop the trace if the trace already started
@@ -196,14 +201,14 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
 
     EVENT_TRACE_LOGFILE eventTraceLog = { 0 };
 
-    uStatus = StartTrace((PTRACEHANDLE)hTrace1, pStrSessionName, &iisLogSessionPropt);
+    uStatus = StartTrace((PTRACEHANDLE)pIISTrace, pStrSessionName, &iisLogSessionPropt);
     if (uStatus != ERROR_SUCCESS)
     {
         _tprintf(L"START TRACE FAIL %i\n", uStatus);
         goto finish;
     }
 
-    uStatus = EnableTraceEx2(*hTrace1,
+    uStatus = EnableTraceEx2(*pIISTrace,
         (LPCGUID)pTraceGUID,
         EVENT_CONTROL_CODE_ENABLE_PROVIDER,
         TRACE_LEVEL_INFORMATION,
@@ -241,8 +246,8 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
     // reuse the hTrace handle variable
     //
 
-    *hTrace1 = OpenTrace(&eventTraceLog);
-    if (*hTrace1 == INVALID_PROCESSTRACE_HANDLE)
+    *pIISTrace = OpenTrace(&eventTraceLog);
+    if (*pIISTrace == INVALID_PROCESSTRACE_HANDLE)
     {
         uStatus = GetLastError();
         _tprintf(L"OPEN TRACE FAIL %i\n", uStatus);
@@ -252,7 +257,7 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
     pThreadHandle = CreateThread(NULL,
         0x2000000,
         ProcessEtwThreadProc,
-        (LPVOID)hTrace1,
+        (LPVOID)pIISTrace,
         0,
         &dwThreadId);
 
@@ -262,9 +267,6 @@ ULONG EtwListner::StartListen(LPWSTR pStrSessionName, LPCGUID pTraceGUID)
         _tprintf(L"START THREAD FAIL %i\n", uStatus);
         goto finish;
     }
-
-    fflush(stdout); 
-    //Sleep(6 * 1000);
 
 finish:
 
