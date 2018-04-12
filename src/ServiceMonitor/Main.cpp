@@ -48,9 +48,13 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
         // iis scenario, update the environment variable
         // we hardcode this behavior for now. We can add an input switch later if needed
         //
+        WCHAR* pstrAppPoolName = L"DefaultAppPool";
+        if (argc > 2) {
+            pstrAppPoolName = argv[2];
+        }
         IISConfigUtil configHelper = IISConfigUtil();
         if( FAILED(hr = configHelper.Initialize()) ||
-            FAILED(hr = configHelper.UpdateEnvironmentVarsToConfig(L"DefaultAppPool")))
+            FAILED(hr = configHelper.UpdateEnvironmentVarsToConfig(pstrAppPoolName)))
         {
             _tprintf(L"\nFailed to update IIS configuration\n");
             goto Finished;
