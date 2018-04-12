@@ -49,7 +49,8 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
         // we hardcode this behavior for now. We can add an input switch later if needed
         //
         WCHAR* pstrAppPoolName = L"DefaultAppPool";
-        if (argc > 2) {
+        if (argc > 2)
+        {
             pstrAppPoolName = argv[2];
         }
         IISConfigUtil configHelper = IISConfigUtil();
