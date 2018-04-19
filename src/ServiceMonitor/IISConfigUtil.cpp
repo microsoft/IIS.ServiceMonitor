@@ -58,10 +58,12 @@ IISConfigUtil::~IISConfigUtil()
 BOOL IISConfigUtil::FilterEnv(const unordered_map<wstring, LPTSTR>& filter, LPCTSTR strEnvName, LPCTSTR strEnvValue)
 {
     LPTSTR   strFilterValue;
+	wstring  strEnvNameUpper = wstring(strEnvName);
+	
     _ASSERT(strEnvName != NULL);
     _ASSERT(strEnvValue != NULL);
-
-    auto value = filter.find(strEnvName);
+	transform(strEnvNameUpper.begin(), strEnvNameUpper.end(), strEnvNameUpper.begin(), towupper);
+    auto value = filter.find(strEnvNameUpper);
 
     //
     // add this environment variable if the name does not match the block list
@@ -260,7 +262,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
 
 
             pEqualChar[0] = L'\0';
-            if (FilterEnv(filter, CharUpper(pstrName), pstrValue))
+            if (FilterEnv(filter, pstrName, pstrValue))
             {
                 pEqualChar[0] = L'=';
                 lpszVariable += lstrlen(lpszVariable) + 1;

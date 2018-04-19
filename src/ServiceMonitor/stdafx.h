@@ -17,7 +17,7 @@
 #include "IISConfigUtil.h"
 #include <unordered_map>
 #include <Windows.h>
-
+#include <algorithm>
 
 
 // TODO: reference additional headers your program requires here
