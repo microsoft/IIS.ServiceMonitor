@@ -16,7 +16,7 @@ class IISConfigUtil
 {
 public:
 
-    IISConfigUtil();
+    IISConfigUtil(BOOL fDebugFlag);
     ~IISConfigUtil();
     HRESULT Initialize();
     HRESULT UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName);
@@ -25,6 +25,7 @@ private:
     HRESULT RunCommand(std::wstring& pstrCmd, BOOL fIgnoreError);
     HRESULT BuildAppCmdCommand(const std::vector<std::pair<std::wstring, std::wstring>>& vecSet, std::vector<std::pair<std::wstring, std::wstring>>::iterator& envVecIter, WCHAR* pstrAppPoolName, std::wstring& pStrCmd, APPCMD_CMD_TYPE appcmdType);
     BOOL    FilterEnv(const std::unordered_map<std::wstring, LPTSTR>& filter, LPCTSTR strEnvName, LPCTSTR strEnvValue);
-    TCHAR*  m_pstrSysDirPath;
+	TCHAR*  m_pstrSysDirPath;
+	BOOL    fDebugMode;
 };
 

@@ -4,6 +4,9 @@
 #include"stdafx.h"
 
 HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;
+BOOL   g_fDebugMode = FALSE;
+
+
 
 VOID CtrlHandle(DWORD dwCtrlType)
 {
@@ -44,17 +47,23 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
             goto Finished;
         }
 
+		if (argc > 2 && (_wcsicmp(argv[2], L"-debug") == 0))
+		{
+			g_fDebugMode = TRUE;
+		}
+
         //
         // iis scenario, update the environment variable
         // we hardcode this behavior for now. We can add an input switch later if needed
         //
-        IISConfigUtil configHelper = IISConfigUtil();
-        if( FAILED(hr = configHelper.Initialize()) ||
+        IISConfigUtil configHelper = IISConfigUtil(g_fDebugMode);
+		if( FAILED(hr = configHelper.Initialize()) ||
             FAILED(hr = configHelper.UpdateEnvironmentVarsToConfig(L"DefaultAppPool")))
         {
             _tprintf(L"\nFailed to update IIS configuration\n");
             goto Finished;
         }
+		
     }
 
     g_hStopEvent = CreateEvent(

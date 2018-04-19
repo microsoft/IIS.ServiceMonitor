@@ -42,8 +42,10 @@ using namespace std;
                         map.insert(KV(L"COMMONPROGRAMW6432",      NULL)); \
                     } while(0)
 
-IISConfigUtil::IISConfigUtil():m_pstrSysDirPath(NULL)
+IISConfigUtil::IISConfigUtil(BOOL fDebugFlag)
+	:m_pstrSysDirPath(NULL)
 {
+	fDebugMode = fDebugFlag;
 }
 
 IISConfigUtil::~IISConfigUtil()
@@ -80,9 +82,16 @@ BOOL IISConfigUtil::FilterEnv(const unordered_map<wstring, LPTSTR>& filter, LPCT
     //
     if ((strFilterValue == NULL ) || (lstrcmpi(strEnvValue, strFilterValue) == 0))
     {
-        return TRUE;
+		if (fDebugMode)
+		{
+			_tprintf(L"\nenv NAME:|%s| VALUE:|%s| will NOT be added\n", strEnvName, strEnvValue);
+		}
+		return TRUE;
     }
-
+	if (fDebugMode)
+	{
+		_tprintf(L"\n env NAME:|%s| VALUE:|%s| will be added\n", strEnvName, strEnvValue);
+	}
     return FALSE;
 }
 
@@ -185,6 +194,10 @@ HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError)
     DWORD       dwStatus = 0;
     PROCESS_INFORMATION pi;
 
+	if (fDebugMode)
+	{
+		_tprintf(L"\nAPPCMD failed with error code %s\n", (LPWSTR)pstrCmd.c_str());
+	}
     ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
     si.dwFlags |= STARTF_USESTDHANDLES;
@@ -260,6 +273,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
 
 
             pEqualChar[0] = L'\0';
+
             if (FilterEnv(filter, CharUpper(pstrName), pstrValue))
             {
                 pEqualChar[0] = L'=';
