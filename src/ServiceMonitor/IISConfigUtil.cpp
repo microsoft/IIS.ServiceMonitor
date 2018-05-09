@@ -21,8 +21,8 @@ using namespace std;
                         map.insert(KV(L"PUBLIC",                  L"C:\\Users\\Public")); \
                         map.insert(KV(L"USERDOMAIN",              L"User Manager")); \
                         map.insert(KV(L"ALLUSERSPROFILE",         L"C:\\ProgramData")); \
-                        map.insert(KV(L"PATH",                    L"C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Users\\ContainerAdministrator\\AppData\\Local\\Microsoft\\WindowsApps")); \
                         map.insert(KV(L"PATHEXT",                 L".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC")); \
+                        map.insert(KV(L"PATH",                    NULL)); \
                         map.insert(KV(L"COMPUTERNAME",            NULL)); \
                         map.insert(KV(L"COMSPEC",                 NULL)); \
                         map.insert(KV(L"OS",                      NULL)); \
@@ -40,6 +40,7 @@ using namespace std;
                         map.insert(KV(L"COMMONPROGRAMFILES",      NULL)); \
                         map.insert(KV(L"COMMONPROGRAMFILES(X86)", NULL)); \
                         map.insert(KV(L"COMMONPROGRAMW6432",      NULL)); \
+                        map.insert(KV(L"DRIVERDATA",              NULL)); \
                     } while(0)
 
 IISConfigUtil::IISConfigUtil():m_pstrSysDirPath(NULL)

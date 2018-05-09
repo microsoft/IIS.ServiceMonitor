@@ -27,8 +27,8 @@ for those Environment variable / value pairs present in this list below.
 | PUBLIC                  | "C:\\Users\\Public"                                                                                                                                                        |
 | USERDOMAIN              | "User Manager"                                                                                                                                                             |
 | ALLUSERSPROFILE         | "C:\\ProgramData"                                                                                                                                                          |
-| PATH                    | "C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Users\\ContainerAdministrator\\Microsoft\\WindowsApps" |
 | PATHEXT                 | ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC"                                                                                                                    |
+| PATH                    | *                                                                                                                                                                          |
 | COMPUTERNAME            | *                                                                                                                                                                          |
 | COMSPEC                 | *                                                                                                                                                                          |
 | OS                      | *                                                                                                                                                                          |
@@ -46,6 +46,7 @@ for those Environment variable / value pairs present in this list below.
 | COMMONPROGRAMFILES      | *                                                                                                                                                                          |
 | COMMONPROGRAMFILES(X86) | *                                                                                                                                                                          |
 | COMMONPROGRAMW6432      | *                                                                                                                                                                          |
+| DRIVERDATA              | *                                                                                                                                                                          |
 
 ## Build
 
