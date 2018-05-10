@@ -260,24 +260,14 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
 
 
             pEqualChar[0] = L'\0';
-			LPTSTR pstrNameCheck = _tcsdup(pstrName);
-            if (FilterEnv(filter, CharUpper(pstrNameCheck), pstrValue))
+            wstring strNameCheck(pstrName);
+            if (FilterEnv(filter, CharUpper((LPWSTR)strNameCheck.c_str()), pstrValue))
             {
                 pEqualChar[0] = L'=';
                 lpszVariable += lstrlen(lpszVariable) + 1;
                 
-				if (pstrNameCheck != NULL)
-				{
-					delete pstrNameCheck;
-					pstrNameCheck = NULL;
-				}
                 continue;
             }
-			if (pstrNameCheck != NULL)
-			{
-				delete pstrNameCheck;
-				pstrNameCheck = NULL;
-			}
 
             envVec.emplace_back(wstring(pstrName), wstring(pstrValue));
 
