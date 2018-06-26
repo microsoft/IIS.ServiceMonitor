@@ -30,7 +30,11 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
 
     if (argc <= 1)
     {
-        _tprintf(L"\nUSAGE: %s [windows service name]\n", argv[0]);
+		_tprintf(L"\nUSAGE: %s [windows service name]", argv[0]);
+		_tprintf(L"\n       %s w3svc [application pool]", argv[0]);
+		_tprintf(L"\n\nOptions:");
+		_tprintf(L"\n    windows service name    Name of the Windows service to monitor");
+		_tprintf(L"\n    application pool        Name of the application pool to monitor; defaults to DefaultAppPool\n");
         goto Finished;
     }
 
