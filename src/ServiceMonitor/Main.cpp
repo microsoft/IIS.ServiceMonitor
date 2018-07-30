@@ -10,11 +10,27 @@ VOID CtrlHandle(DWORD dwCtrlType)
     switch (dwCtrlType)
     {
     case CTRL_C_EVENT:
+        _tprintf(L"\nCTRL C signal received. The process will now terminate.\n");
+        SetEvent(g_hStopEvent);
+        g_hStopEvent = INVALID_HANDLE_VALUE;
+        break;
     case CTRL_CLOSE_EVENT:
+        _tprintf(L"\nCTRL CLOSE signal received. The process will now terminate.\n");
+        SetEvent(g_hStopEvent);
+        g_hStopEvent = INVALID_HANDLE_VALUE;
+        break;
     case CTRL_BREAK_EVENT:
+        _tprintf(L"\nCTRL BREAK signal received. The process will now terminate.\n");
+        SetEvent(g_hStopEvent);
+        g_hStopEvent = INVALID_HANDLE_VALUE;
+        break;
     case CTRL_LOGOFF_EVENT:
+        _tprintf(L"\nCTRL LOGOFF signal received. The process will now terminate.\n");
+        SetEvent(g_hStopEvent);
+        g_hStopEvent = INVALID_HANDLE_VALUE;
+        break;
     case CTRL_SHUTDOWN_EVENT:
-        _tprintf(L"\nCTRL signal received. The process will now terminate.\n");
+        _tprintf(L"\nCTRL SHUTDOWN signal received. The process will now terminate.\n");
         SetEvent(g_hStopEvent);
         g_hStopEvent = INVALID_HANDLE_VALUE;
         break;
