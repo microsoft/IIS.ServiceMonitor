@@ -261,7 +261,8 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
 
 
             pEqualChar[0] = L'\0';
-            if (FilterEnv(filter, CharUpper(pstrName), pstrValue))
+            wstring strNameCheck(pstrName);
+            if (FilterEnv(filter, CharUpper((LPWSTR)strNameCheck.c_str()), pstrValue))
             {
                 pEqualChar[0] = L'=';
                 lpszVariable += lstrlen(lpszVariable) + 1;
