@@ -20,9 +20,11 @@ VOID CALLBACK Service_Monitor::NotifyCallBack(PVOID parameter)
 HRESULT Service_Monitor::EnsureInitialized()
 {
     HRESULT hr = S_OK;
-    if (!_fInitialized) {
+    if (!_fInitialized)
+    {
         AcquireSRWLockExclusive(&_srwLock);
-        if (!_fInitialized) {
+        if (!_fInitialized)
+        {
             _hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
             if (_hSCManager == NULL)
             {
