@@ -5,7 +5,7 @@ jobs:
   parameters:
     agentPoolName: 'VSEng-MicroBuildV2CustomPool'
     agentPoolDemandTeam: 'IISAdmin'
-    solution: '**\Compression.sln'
+    solution: '**\ServiceMonitor.sln'
     productMajor: 1
     productMinor: 0
     signType: 'real'
