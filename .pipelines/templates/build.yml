@@ -1,0 +1,149 @@
+parameters:
+  agentPoolName: ''
+  agentPoolDemandTeam: ''
+  solution: '**\*.sln'
+  buildConfiguration: 'Release'
+  productMajor: 1
+  productMinor: 0
+  signType: 'test'
+  signingIdentity: 'Microsoft'
+  teamName: 'IIS'
+  indexSourcesAndPublishSymbols: 'false'
+  publishArtifactInstaller: 'false'
+
+jobs:
+- job: build
+
+  pool:
+    name: ${{ parameters.agentPoolName }}
+    demands:
+    - msbuild
+    - visualstudio
+    - ${{ if ne(parameters.agentPoolDemandTeam, '') }}:
+      - Team -equals ${{ parameters.agentPoolDemandTeam }}
+
+  variables:
+    TeamName: ${{ parameters.teamName }} # required by MicroBuildTasks
+
+  steps:
+  - checkout: self
+    clean: true
+    submodules: recursive
+
+  - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+    displayName: 'Install Signing Plugin'
+    inputs:
+      signType: ${{ parameters.signType }}
+
+  - task: NuGetToolInstaller@1
+    displayName: 'Install NuGet Tool'
+    inputs:
+      versionSpec: '>=4.7.1'
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore'
+    inputs:
+      command: 'restore'
+      restoreSolution: ${{ parameters.solution }}
+      feedsToUse: config
+      nugetConfigPath: NuGet.config
+
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0 
+    displayName: 'Component Detection'
+
+  - task: VSBuild@1
+    displayName: 'Build x86'
+    inputs:
+      solution: ${{ parameters.solution }}
+      vsVersion: 15.0
+      msbuildArgs: '/p:PRODUCT_MAJOR=${{ parameters.productMajor }} /p:PRODUCT_MINOR=${{ parameters.productMinor }} /p:BUILD_MAJOR=$(Build.BuildNumber) /p:SignType=${{ parameters.signType }} /p:SigningIdentity=${{ parameters.signingIdentity }}'
+      platform: x86
+      configuration: ${{ parameters.buildConfiguration }}
+      clean: true
+      msbuildArchitecture: x64
+
+  - task: VSBuild@1
+    displayName: 'Build x64'
+    inputs:
+      solution: ${{ parameters.solution }}
+      vsVersion: 15.0
+      msbuildArgs: '/p:PRODUCT_MAJOR=${{ parameters.productMajor }} /p:PRODUCT_MINOR=${{ parameters.productMinor }} /p:BUILD_MAJOR=$(Build.BuildNumber) /p:SignType=${{ parameters.signType }} /p:SigningIdentity=${{ parameters.signingIdentity }}'
+      platform: x64
+      configuration: ${{ parameters.buildConfiguration }}
+      clean: true
+      msbuildArchitecture: x64
+
+  - task: CopyFiles@2
+    displayName: 'Copy Binaries x86'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x86'
+      Contents: |
+       **\*.dll
+       **\*.exe
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\Binaries\x86'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Binaries x64'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x64'
+      Contents: |
+       **\*.dll
+       **\*.exe
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\Binaries\x64'
+ 
+  - task: CopyFiles@2
+    displayName: 'Copy Symbols x86'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+      Contents: '**\x86\**\*.pdb'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\Symbols\x86'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Symbols x64'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+      Contents: '**\x64\**\*pdb'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\Symbols\x64'
+
+  - ${{ if eq(parameters.publishArtifactInstaller, 'true') }}:
+    - task: CopyFiles@2
+      displayName: 'Copy Installers x86'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x86'
+        Contents: '**\*.msi'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x86'
+
+  - ${{ if eq(parameters.publishArtifactInstaller, 'true') }}:
+    - task: CopyFiles@2
+      displayName: 'Copy Installers x64'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x64'
+        Contents: '**\*.msi'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x64'
+
+  - ${{ if eq(parameters.indexSourcesAndPublishSymbols, 'true') }}:
+    - task: PublishSymbols@2
+      displayName: 'Enable Source Server'
+      inputs:
+        SymbolsFolder: '$(Build.ArtifactStagingDirectory)\Symbols'
+        SearchPattern: '**\*.pdb'
+        SymbolServerType: TeamServices
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Binaries'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)\Binaries'
+      ArtifactName: Binaries
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Symbols'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)\Symbols'
+      ArtifactName: Symbols
+
+  - ${{ if eq(parameters.publishArtifactInstaller, 'true') }}:
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: Installers'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)\Installers'
+        ArtifactName: Installers
