@@ -1,0 +1,12 @@
+name: $(Rev:rr)
+
+jobs:
+- template: templates\build.yml
+  parameters:
+    agentPoolName: 'VSEng-MicroBuildV2CustomPool'
+    agentPoolDemandTeam: 'IISAdmin'
+    solution: '**\ServiceMonitor.sln'
+    productMajor: 2
+    productMinor: 0
+    signType: 'test'
+    publishArtifactInstaller: 'true'
