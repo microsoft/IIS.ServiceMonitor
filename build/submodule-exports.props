@@ -1,0 +1,29 @@
+<Project InitialTargets="EnsureCommonExists" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Provide exports to submodule hosts --> 
+
+  <PropertyGroup>
+    <IIS-ServiceMonitor Condition="$(IIS-ServiceMonitor) == ''">$(MSBuildThisFileDirectory)..\</IIS-ServiceMonitor>
+  </PropertyGroup>
+
+  <!-- Imports for when this solution is a submodule host -->
+
+  <PropertyGroup>
+    <_IIS-CommonExportsPath>$(IIS-ServiceMonitor)IIS.Common\build\submodule-exports.props</_IIS-CommonExportsPath>
+    <_IIS-SetupExportsPath>$(IIS-ServiceMonitor)IIS.Setup\build\submodule-exports.props</_IIS-SetupExportsPath>
+  </PropertyGroup>
+
+  <Import Condition="$(IIS-Common) == '' AND Exists('$(_IIS-CommonExportsPath)')" Project="$(_IIS-CommonExportsPath)" />
+  <Import Condition="$(IIS-Setup) == '' AND Exists('$(_IIS-SetupExportsPath)')" Project="$(_IIS-SetupExportsPath)" />
+
+  <!-- Build error if submodule dependencies could not be found. -->
+
+  <Target Name="EnsureCommonExists">
+    <Error Condition="!Exists($(IIS-Common))" Text="The IIS-Common submodule could not be found. Use 'git submodule update --init --recursive' to pull down the IIS-Common repository." />
+  </Target>
+
+  <Target Name="EnsureCommonSetupExists" AfterTargets="EnsureCommonExists">
+    <Error Condition="!Exists($(IIS-Setup))" Text="The IIS-Setup submodule could not be found. Use 'git submodule update --init --recursive' to pull down the IIS-Setup repository." />
+  </Target>
+
+</Project>
