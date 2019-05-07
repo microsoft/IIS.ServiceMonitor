@@ -10,4 +10,4 @@ jobs:
     productMinor: 0
     signType: 'real'
     indexSourcesAndPublishSymbols: 'true'
-    publishArtifactInstaller: 'true'
+    publishArtifactInstaller: 'false'
