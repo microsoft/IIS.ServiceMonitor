@@ -9,4 +9,4 @@ jobs:
     productMajor: 2
     productMinor: 0
     signType: 'test'
-    publishArtifactInstaller: 'true'
+    publishArtifactInstaller: 'false'
