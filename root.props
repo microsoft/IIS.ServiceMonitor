@@ -1,0 +1,13 @@
+<!--
+****************************************************************************************************
+Project global versioning targets.
+****************************************************************************************************-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <SourceRoot>$(RepositoryRoot)src</SourceRoot>
+  </PropertyGroup>
+
+  <Import Project="$(RepositoryRoot)build\Build.Settings.targets" Condition="Exists('$(RepositoryRoot)build\Build.Settings.targets')" />
+</Project>

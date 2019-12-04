@@ -1,13 +1,24 @@
-name: $(Rev:rr)
+name: $(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.rr)
+
+pr: none
+trigger: none
+
+resources:
+  repositories:
+    - repository: MicrosoftIISCommon
+      type: github
+      name: Microsoft/IIS.Common
+      endpoint: GitHub-IIS-PAT
 
 jobs:
-- template: templates\build.yml
+- template: .azure\templates\build.yml@MicrosoftIISCommon
   parameters:
-    agentPoolName: 'VSEng-MicroBuildV2CustomPool'
-    agentPoolDemandTeam: 'IISAdmin'
+    agentPoolName: 'VSEng-MicroBuildVS2017'
+    agentPoolDemandTeam: ''
     solution: '**\ServiceMonitor.sln'
     productMajor: 1
     productMinor: 0
     signType: 'real'
     indexSourcesAndPublishSymbols: 'true'
-    publishArtifactInstaller: 'false'
+    publishArtifactInstallers: 'false'
+    whiteListPathForAuthenticodeSign: '$(Build.SourcesDirectory)\IIS-Common\.azure\templates\no_authenticode.txt'
