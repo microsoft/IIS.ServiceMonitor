@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  
+  <PropertyGroup>
+    <PlatformShortname Condition="'$(PlatformShortname)' == '' AND '$(Platform)' == 'x64'">x64</PlatformShortname>
+    <PlatformShortname Condition="'$(PlatformShortname)' == '' AND ('$(Platform.ToLower())' == 'win32' OR '$(Platform)' == 'x86')">x86</PlatformShortname>
+  </PropertyGroup>
+</Project>

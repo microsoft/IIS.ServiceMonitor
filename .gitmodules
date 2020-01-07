@@ -1,0 +1,3 @@
+[submodule "IIS.Common"]
+	path = IIS.Common
+	url = https://github.com/Microsoft/IIS.Common.git

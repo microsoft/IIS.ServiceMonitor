@@ -1,11 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.props" Condition="Exists('..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.props')" />
-  <ItemGroup Condition=" '$(SignType)' != ''">
-    <FilesToSign Include="$(FilesToSign);$(OutDir)\$(TargetFileName)">
-      <Authenticode>$(SigningIdentity)</Authenticode>
-    </FilesToSign>
-  </ItemGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -31,6 +26,10 @@
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <OutDir>$(RepositoryRoot)bin\$(Configuration)\$(PlatformShortname)\</OutDir>
+    <IntDir>$(RepositoryRoot)obj\$(PlatformShortname)\$(Configuration)\$(MSBuildThisFileName)\</IntDir>
+  </PropertyGroup>  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -177,6 +176,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemGroup Condition=" '$(SignType)' != ''">
+    <FilesToSign Include="$(FilesToSign);$(OutDir)\$(TargetFileName)">
+      <Authenticode>$(SigningIdentity)</Authenticode>
+    </FilesToSign>
+  </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets" Condition="Exists('..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets')" />
   </ImportGroup>
