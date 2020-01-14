@@ -214,7 +214,7 @@ HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError)
         //
         // appcmd command failed
         //
-        _tprintf(L"\n[SERVICEMONITOR] APPCMD failed with error code %d\n", dwStatus);
+        _tprintf(L"\nAPPCMD failed with error code %d\n", dwStatus);
         hr = E_FAIL;
     }
 
@@ -244,7 +244,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     lpvEnv = GetEnvironmentStrings();
     if (lpvEnv == NULL)
     {
-        _tprintf(L"[SERVICEMONITOR] Failed to call GetEnvironmentStrings! \n");
+        _tprintf(L"Failed to call GetEnvironmentStrings! \n");
         hr = E_FAIL;
         goto Finished;
     }
