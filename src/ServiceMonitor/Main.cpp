@@ -4,6 +4,8 @@
 #include"stdafx.h"
 
 HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;
+HANDLE g_hProcessExitEvent = INVALID_HANDLE_VALUE;
+
 
 VOID CtrlHandle(DWORD dwCtrlType)
 {
@@ -14,9 +16,11 @@ VOID CtrlHandle(DWORD dwCtrlType)
     case CTRL_BREAK_EVENT:
     case CTRL_LOGOFF_EVENT:
     case CTRL_SHUTDOWN_EVENT:
-        _tprintf(L"\nCTRL signal received. The process will now terminate.\n");
+        _tprintf(L"\n[SERVICEMONITOR] CTRL signal received. The process will terminate after stopping the service.\n");
         SetEvent(g_hStopEvent);
         g_hStopEvent = INVALID_HANDLE_VALUE;
+
+        WaitForSingleObjectEx(g_hProcessExitEvent, INFINITE, TRUE);
         break;
     default:
         return;
@@ -61,7 +65,7 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
         if( FAILED(hr = configHelper.Initialize()) ||
             FAILED(hr = configHelper.UpdateEnvironmentVarsToConfig(pstrAppPoolName)))
         {
-            _tprintf(L"\nFailed to update IIS configuration\n");
+            _tprintf(L"\n[SERVICEMONITOR] Failed to update IIS configuration\n");
             goto Finished;
         }
     }
@@ -82,7 +86,7 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
     if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandle, TRUE))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
-        _tprintf(L"\nERROR: Failed to set control handle with error [%x]\n", hr);
+        _tprintf(L"\n[SERVICEMONITOR] ERROR: Failed to set control handle with error [%x]\n", hr);
         goto Finished;
     }
 
@@ -109,10 +113,14 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
     sm.StopServiceByName(argv[1]);
 
 Finished:
-    if (g_hStopEvent != INVALID_HANDLE_VALUE)
+	if (g_hStopEvent != INVALID_HANDLE_VALUE)
     {
         CloseHandle(g_hStopEvent);
         g_hStopEvent = INVALID_HANDLE_VALUE;
     }
+
+    _tprintf(L"\n[SERVICEMONITOR] The process terminated.\n");
+    SetEvent(g_hProcessExitEvent);
+    g_hProcessExitEvent = INVALID_HANDLE_VALUE;
     return hr;
 }

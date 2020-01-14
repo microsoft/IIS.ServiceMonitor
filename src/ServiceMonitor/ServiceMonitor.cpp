@@ -9,7 +9,7 @@ VOID CALLBACK Service_Monitor::NotifyCallBack(PVOID parameter)
 {
     PSERVICE_NOTIFY pSNotify = (PSERVICE_NOTIFY)parameter;
     HANDLE hEvent = (HANDLE) pSNotify->pContext;
-    _tprintf(L"\nService Change Status Notify Callback is called for service '%s' with status '%d'",
+    _tprintf(L"\n[SERVICEMONITOR] Service Change Status Notify Callback is called for service '%s' with status '%d'",
         pSNotify->pszServiceNames, pSNotify->ServiceStatus.dwCurrentState);
     if (hEvent != NULL) 
     {
@@ -29,7 +29,7 @@ HRESULT Service_Monitor::EnsureInitialized()
             if (_hSCManager == NULL)
             {
                 hr = HRESULT_FROM_WIN32(GetLastError());
-                _tprintf(L"\nERROR:Could NOT open server control manager [%x]\n", hr);
+                _tprintf(L"\n[SERVICEMONITOR] ERROR:Could NOT open server control manager [%x]\n", hr);
             }
             else
             {
@@ -111,11 +111,11 @@ HRESULT Service_Monitor::StartServiceByName(LPCTSTR pServiceName, DWORD dwTimeOu
     Finished:
     if(SUCCEEDED(hr))
     {
-        _tprintf(L"\n Service '%s' started \n", pServiceName);
+        _tprintf(L"\n[SERVICEMONITOR] Service '%s' started \n", pServiceName);
     }
     else
     {
-        _tprintf(L"\nERROR: Failed to start or query status of service '%s' error [%x]\n", pServiceName, hr);
+        _tprintf(L"\n[SERVICEMONITOR] ERROR: Failed to start or query status of service '%s' error [%x]\n", pServiceName, hr);
     }
 
     if (hService != NULL)
@@ -187,11 +187,11 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
     Finished: 
         if (SUCCEEDED(hr))
         {
-            _tprintf(L"\n Service '%s' has been stopped \n", pServiceName);
+            _tprintf(L"\n[SERVICEMONITOR] Service '%s' has been stopped \n", pServiceName);
         }
         else
         {
-            _tprintf(L"\nERROR: Failed to stop or query status of service '%s' error [%x]\n", pServiceName, hr);
+            _tprintf(L"\n[SERVICEMONITOR] ERROR: Failed to stop or query status of service '%s' error [%x]\n", pServiceName, hr);
         }
 
         if (hService != NULL)
@@ -224,7 +224,7 @@ HRESULT Service_Monitor::MonitoringService(LPCTSTR pServiceName, DWORD dwStatus,
     if (dwError != ERROR_SUCCESS)
     {
         hr = HRESULT_FROM_WIN32(dwError);
-        _tprintf(L"\nERROR: fail to register status change callback [%x]\n", hr);
+        _tprintf(L"\n[SERVICEMONITOR] ERROR: fail to register status change callback [%x]\n", hr);
         goto Finished;
     }
 
@@ -239,7 +239,7 @@ HRESULT Service_Monitor::MonitoringService(LPCTSTR pServiceName, DWORD dwStatus,
         // An error occurred
     default:
         hr = HRESULT_FROM_WIN32(GetLastError());
-        _tprintf(L"\nERROR: Monitoring service '%s' wait error [%x]\n", pServiceName, hr);
+        _tprintf(L"\n[SERVICEMONITOR] ERROR: Monitoring service '%s' wait error [%x]\n", pServiceName, hr);
     }
 
 Finished:
@@ -256,7 +256,7 @@ HRESULT Service_Monitor::GetServiceHandle(LPCTSTR pServiceName, SC_HANDLE* pHand
 
     if (pServiceName == NULL)
     {
-        _tprintf(L"\nERROR: Null parameter for GetServiceHandle()\n");
+        _tprintf(L"\n[SERVICEMONITOR] ERROR: Null parameter for GetServiceHandle()\n");
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
         goto Finished;
     }
