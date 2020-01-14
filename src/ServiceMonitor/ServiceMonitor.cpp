@@ -111,7 +111,7 @@ HRESULT Service_Monitor::StartServiceByName(LPCTSTR pServiceName, DWORD dwTimeOu
     Finished:
     if(SUCCEEDED(hr))
     {
-        _tprintf(L"\nService '%s' started \n", pServiceName);
+        _tprintf(L"\n Service '%s' started \n", pServiceName);
     }
     else
     {
@@ -187,7 +187,7 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
     Finished: 
         if (SUCCEEDED(hr))
         {
-            _tprintf(L"\nService '%s' has been stopped \n", pServiceName);
+            _tprintf(L"\n Service '%s' has been stopped \n", pServiceName);
         }
         else
         {
