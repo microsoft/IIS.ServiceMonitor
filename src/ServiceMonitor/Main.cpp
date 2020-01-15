@@ -5,7 +5,6 @@
 
 HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;
 
-
 BOOL CtrlHandle(DWORD dwCtrlType)
 {
     switch (dwCtrlType)
