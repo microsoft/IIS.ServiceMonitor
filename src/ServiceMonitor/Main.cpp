@@ -8,9 +8,6 @@ HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;
 
 BOOL CtrlHandle(DWORD dwCtrlType)
 {
-    HRESULT   hr = S_OK;
-    DWORD     dwWaitResult;
-
     switch (dwCtrlType)
     {
     case CTRL_C_EVENT:
