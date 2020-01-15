@@ -7,7 +7,7 @@ HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;
 HANDLE g_hProcessExitEvent = INVALID_HANDLE_VALUE;
 
 
-VOID CtrlHandle(DWORD dwCtrlType)
+BOOL CtrlHandle(DWORD dwCtrlType)
 {
     HRESULT   hr = S_OK;
     DWORD     dwWaitResult;
@@ -36,10 +36,13 @@ VOID CtrlHandle(DWORD dwCtrlType)
             hr = HRESULT_FROM_WIN32(GetLastError());
             _tprintf(L"\nERROR: Stoppoing service wait error [%x]\n", hr);
         }
+
         break;
     default:
-        return;
+        return TRUE;
     }
+
+    return TRUE;
 }
 
 int __cdecl _tmain(int argc, _TCHAR* argv[])
