@@ -4,7 +4,6 @@
 #include"stdafx.h"
 
 HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;
-HANDLE g_hProcessExitEvent = INVALID_HANDLE_VALUE;
 
 
 BOOL CtrlHandle(DWORD dwCtrlType)
@@ -22,24 +21,10 @@ BOOL CtrlHandle(DWORD dwCtrlType)
         _tprintf(L"\nCTRL signal received. The process will terminate after stopping the service.\n");
         SetEvent(g_hStopEvent);
         g_hStopEvent = INVALID_HANDLE_VALUE;
-
-        dwWaitResult = WaitForSingleObjectEx(g_hProcessExitEvent, INFINITE, TRUE);
-        switch (dwWaitResult)
-        {
-            // Event object was signaled
-        case WAIT_OBJECT_0:
-        case WAIT_IO_COMPLETION:
-            break;
-
-            // An error occurred
-        default:
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            _tprintf(L"\nERROR: Stoppoing service wait error [%x]\n", hr);
-        }
-
         break;
+
     default:
-        return TRUE;
+        break;
     }
 
     return TRUE;
@@ -138,7 +123,5 @@ Finished:
     }
 
     _tprintf(L"\nThe process terminated.\n");
-    SetEvent(g_hProcessExitEvent);
-    g_hProcessExitEvent = INVALID_HANDLE_VALUE;
     return hr;
 }
