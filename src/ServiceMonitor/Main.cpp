@@ -18,7 +18,7 @@ BOOL CtrlHandle(DWORD dwCtrlType)
     case CTRL_BREAK_EVENT:
     case CTRL_LOGOFF_EVENT:
     case CTRL_SHUTDOWN_EVENT:
-        _tprintf(L"\nCTRL signal received. The process will terminate after stopping the service.\n");
+        _tprintf(L"\nCTRL signal received. The process will now terminate.\n");
         SetEvent(g_hStopEvent);
         g_hStopEvent = INVALID_HANDLE_VALUE;
         break;
