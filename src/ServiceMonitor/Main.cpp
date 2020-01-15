@@ -121,7 +121,5 @@ Finished:
         CloseHandle(g_hStopEvent);
         g_hStopEvent = INVALID_HANDLE_VALUE;
     }
-
-    _tprintf(L"\nThe process terminated.\n");
     return hr;
 }
