@@ -5,7 +5,7 @@
 
 HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;
 
-VOID CtrlHandle(DWORD dwCtrlType)
+BOOL CtrlHandle(DWORD dwCtrlType)
 {
     switch (dwCtrlType)
     {
@@ -18,9 +18,12 @@ VOID CtrlHandle(DWORD dwCtrlType)
         SetEvent(g_hStopEvent);
         g_hStopEvent = INVALID_HANDLE_VALUE;
         break;
+
     default:
-        return;
+        break;
     }
+
+    return TRUE;
 }
 
 int __cdecl _tmain(int argc, _TCHAR* argv[])
@@ -79,7 +82,7 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
         goto Finished;
     }
 
-    if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandle, TRUE))
+    if (!SetConsoleCtrlHandler(CtrlHandle, TRUE))
     {
         hr = HRESULT_FROM_WIN32(GetLastError());
         _tprintf(L"\nERROR: Failed to set control handle with error [%x]\n", hr);

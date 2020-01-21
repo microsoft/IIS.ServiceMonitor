@@ -167,6 +167,7 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
                         hr = HRESULT_FROM_WIN32(GetLastError());
                         goto Finished;
                     }
+                    _tprintf(L"\nStopping service '%s'\n", pServiceName);
                 }
                 else
                 {
