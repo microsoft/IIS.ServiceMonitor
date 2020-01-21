@@ -133,7 +133,6 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
         DWORD     dwSleepTime = 0;
         DWORD     dwRemainTime = dwTimeOutSeconds;
         SERVICE_STATUS_PROCESS sStatus;
-        BOOL      serviceStopped = false;
 
         hr = GetServiceHandle(pServiceName, &hService);
         if (SUCCEEDED(hr)) 
@@ -168,7 +167,7 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
                         hr = HRESULT_FROM_WIN32(GetLastError());
                         goto Finished;
                     }
-                    serviceStopped = true;
+                    _tprintf(L"\nStopping service '%s'\n", pServiceName);
                 }
                 else
                 {
@@ -193,14 +192,7 @@ HRESULT Service_Monitor::StopServiceByName(LPCTSTR pServiceName, DWORD dwTimeOut
         }
         else
         {
-            if (serviceStopped)
-            {
-                _tprintf(L"\nINFO: Failed to query status after stopping service '%s' error [%x]\n", pServiceName, hr);
-            }
-            else
-            {
-                _tprintf(L"\nERROR: Failed to stop or query status of service '%s' error [%x]\n", pServiceName, hr);
-            }
+            _tprintf(L"\nERROR: Failed to stop or query status of service '%s' error [%x]\n", pServiceName, hr);
         }
 
         if (hService != NULL)
