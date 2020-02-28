@@ -5,7 +5,7 @@
 
 HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;
 
-BOOL CtrlHandle(DWORD dwCtrlType)
+BOOL WINAPI CtrlHandle(DWORD dwCtrlType)
 {
     switch (dwCtrlType)
     {
