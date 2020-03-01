@@ -1,4 +1,4 @@
-name: $(Rev:.rr)
+name: $(Rev:rr)
 
 pr:
   - master
