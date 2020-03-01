@@ -1,4 +1,4 @@
-name: $(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.rr)
+name: $(Rev:.rr)
 
 pr:
   - master
