@@ -1,8 +1,11 @@
-name: $(Rev:rr)
+name: $(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.rr)
 
 pr:
   - master
 
+variables:
+  BuildMinorVersion: $(Rev:rr)
+  
 trigger:
   batch: true
   branches:
