@@ -24,7 +24,7 @@ jobs:
     solution: '**\ServiceMonitor.sln'
     productMajor: 2
     productMinor: 0
-    buildMinor: $(Rev:rr)
+    buildMinor: $(Rev)
     signType: 'test'
     indexSourcesAndPublishSymbols: 'true'
     publishArtifactInstallers: 'false'
