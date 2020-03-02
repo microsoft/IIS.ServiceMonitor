@@ -3,9 +3,6 @@ name: $(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.rr)
 pr:
   - master
 
-variables:
-  BuildMinorVersion: $(Rev:rr)
-  
 trigger:
   batch: true
   branches:
@@ -27,6 +24,7 @@ jobs:
     solution: '**\ServiceMonitor.sln'
     productMajor: 2
     productMinor: 0
+    buildMinor: $(Rev:rr)
     signType: 'test'
     indexSourcesAndPublishSymbols: 'true'
     publishArtifactInstallers: 'false'
