@@ -1,4 +1,4 @@
-name: $(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.rr)
+name: $(Rev:rr)
 
 pr:
   - master
@@ -24,6 +24,7 @@ jobs:
     solution: '**\ServiceMonitor.sln'
     productMajor: 2
     productMinor: 0
+    buildMinor: $(Build.BuildNumber)
     signType: 'test'
     indexSourcesAndPublishSymbols: 'true'
     publishArtifactInstallers: 'false'
