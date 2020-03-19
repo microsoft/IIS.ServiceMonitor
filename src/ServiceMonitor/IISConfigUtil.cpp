@@ -131,6 +131,18 @@ Finished:
     return hr;
 }
 
+void IISConfigUtil::Replace(std::wstring& str, std::wstring oldValue, std::wstring newValue)
+{
+    size_t pos = 0;
+    size_t oldValueLen = oldValue.length();
+    size_t newValueLen = newValue.length();
+
+    while ((pos = str.find(oldValue, pos)) != std::wstring::npos) {
+        str.replace(pos, oldValueLen, newValue);
+        pos += newValueLen;
+    }
+}
+
 HRESULT IISConfigUtil::BuildAppCmdCommand(const vector<pair<wstring, wstring>>& vecSet, vector<pair<wstring, wstring>>::iterator& envVecIter, WCHAR* pstrAppPoolName, wstring& pStrCmd, APPCMD_CMD_TYPE appCmdType)
 {
     HRESULT hr = S_OK;
@@ -143,6 +155,14 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(const vector<pair<wstring, wstring>>& 
     {
         wstring strEnvName  = envVecIter->first;
         wstring strEnvValue = envVecIter->second;
+
+        //
+        // Handle values that have single and double quotes
+        //
+        Replace(strEnvName, L"'", L"''");
+        Replace(strEnvName, L"\"", L"\"\"\"");
+        Replace(strEnvValue, L"'", L"''");
+        Replace(strEnvValue, L"\"", L"\"\"\"");
 
         if ((pStrCmd.length() + strEnvName.length() + strEnvValue.length()) > APPCMD_MAX_SIZE)
         {
