@@ -18,6 +18,7 @@ jobs:
     solution: '**\ServiceMonitor.sln'
     productMajor: 1
     productMinor: 0
+    buildMinor: $(Build.BuildNumber)
     signType: 'real'
     indexSourcesAndPublishSymbols: 'true'
     publishArtifactInstallers: 'false'
