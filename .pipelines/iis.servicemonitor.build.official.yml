@@ -13,7 +13,7 @@ resources:
 jobs:
 - template: .azure\templates\build.yml@MicrosoftIISCommon
   parameters:
-    agentPoolName: 'VSEng-MicroBuildVS2017'
+    agentPoolName: 'VSEngSS-MicroBuild2017'
     agentPoolDemandTeam: ''
     solution: '**\ServiceMonitor.sln'
     productMajor: 1
