@@ -59,6 +59,11 @@ for those Environment variable / value pairs present in this list below.
 ```
 .\ServiceMonitor.exe w3svc
 ```
+OR You can supply your preferred _application pool name_, as opposed to the default one: `DefaultAppPool`.
+
+```
+.\ServiceMonitor.exe w3svc [application_pool_name]
+```
 
 ServiceMonitor is currently distributed as part of the [IIS](https://hub.docker.com/_/microsoft-windows-servercore-iis),
 [ASP.NET](https://hub.docker.com/_/microsoft-dotnet-framework-aspnet), and [WCF](https://hub.docker.com/_/microsoft-dotnet-framework-wcf) images on Docker Hub. We recommend layering your project on top of those official images as running
