@@ -14,7 +14,7 @@ resources:
     - repository: MicrosoftIISCommon
       type: github
       name: Microsoft/IIS.Common
-      endpoint: GitHub-IIS-PAT
+      endpoint: GitHub-IIS-Token
 
 jobs:
 - template: .azure\templates\build.yml@MicrosoftIISCommon
