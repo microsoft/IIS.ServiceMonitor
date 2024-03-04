@@ -12,7 +12,7 @@ resources:
       ref: refs/tags/release
 variables:      
   Solution: '**\ServiceMonitor.sln'
-  RestoreSolution: 'Compression.sln;IIS-Setup/IIS-Setup.sln'
+  RestoreSolution: '**\ServiceMonitor.sln'
   ProductMajor: 1
   ProductMinor: 0
   BuildMajor: ''
