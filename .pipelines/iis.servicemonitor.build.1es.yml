@@ -1,4 +1,4 @@
-name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.rr)
+name: $(Rev:rr)
 pr: none
 trigger: none
 resources:
