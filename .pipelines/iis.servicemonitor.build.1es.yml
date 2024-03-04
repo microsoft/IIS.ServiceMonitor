@@ -191,7 +191,7 @@ extends:
             targetFolders: '$(Build.ArtifactStagingDirectory)\Binaries'
             whiteListPathForCerts: $(WhiteListPathForAuthenticodeSign)
             whiteListPathForSigs: $(WhiteListPathForStrongNameSign)
-        - if eq($(.publishArtifactInstallers), 'true'):
+        - if eq($(publishArtifactInstallers), 'true'):
             - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
               displayName: 'Verify Signed Installers'
               inputs:
