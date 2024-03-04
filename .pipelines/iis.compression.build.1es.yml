@@ -66,11 +66,11 @@ extends:
             displayName: 'Publish Artifact: Symbols'
             targetPath: '$(Build.ArtifactStagingDirectory)\Symbols'
             artifactName: Symbols
-          - if eq(parameters.publishArtifactInstallers, 'true'):
-            - output: pipelineArtifact
-              displayName: 'Publish Artifact: Installers'
-              targetPath: '$(Build.ArtifactStagingDirectory)\Installers'
-              artifactName: Installers
+          # - if eq(parameters.publishArtifactInstallers, 'true'):
+          #   - output: pipelineArtifact
+          #     displayName: 'Publish Artifact: Installers'
+          #     targetPath: '$(Build.ArtifactStagingDirectory)\Installers'
+          #     artifactName: Installers
           - output: pipelineArtifact
             displayName: 'Publish Artifact: Sources'
             targetPath: '$(Build.ArtifactStagingDirectory)\Sources'
@@ -172,31 +172,31 @@ extends:
             sourceFolder: '$(Build.SourcesDirectory)'
             contents: '**\x64\**\*pdb'
             targetFolder: '$(Build.ArtifactStagingDirectory)\Symbols\x64'
-        - if eq(parameters.publishArtifactInstallers, 'true'):
-          - task: CopyFiles@2
-            displayName: 'Copy Installers x86'
-            inputs:
-              sourceFolder: '$(Build.SourcesDirectory)\bin\$(BuildConfiguration)\x86'
-              contents: '**\*.msi'
-              targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x86'
-          - task: CopyFiles@2
-            displayName: 'Copy Installers x64'
-            inputs:
-              sourceFolder: '$(Build.SourcesDirectory)\bin\$(BuildConfiguration)\x64'
-              contents: '**\*.msi'
-              targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x64'
+        # - if eq(parameters.publishArtifactInstallers, 'true'):
+        #   - task: CopyFiles@2
+        #     displayName: 'Copy Installers x86'
+        #     inputs:
+        #       sourceFolder: '$(Build.SourcesDirectory)\bin\$(BuildConfiguration)\x86'
+        #       contents: '**\*.msi'
+        #       targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x86'
+        #   - task: CopyFiles@2
+        #     displayName: 'Copy Installers x64'
+        #     inputs:
+        #       sourceFolder: '$(Build.SourcesDirectory)\bin\$(BuildConfiguration)\x64'
+        #       contents: '**\*.msi'
+        #       targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x64'
         - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
           displayName: 'Verify Signed Binaries'
           inputs:
             targetFolders: '$(Build.ArtifactStagingDirectory)\Binaries'
             whiteListPathForCerts: $(WhiteListPathForAuthenticodeSign)
             whiteListPathForSigs: $(WhiteListPathForStrongNameSign)
-        - if eq(parameters.publishArtifactInstallers, 'true'):
-            - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
-              displayName: 'Verify Signed Installers'
-              inputs:
-                targetFolders: '$(Build.ArtifactStagingDirectory)\Installers'
-                whiteListPathForCerts: $(WhiteListPathForAuthenticodeSign)
+        # - if eq(parameters.publishArtifactInstallers, 'true'):
+        #     - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
+        #       displayName: 'Verify Signed Installers'
+        #       inputs:
+        #         targetFolders: '$(Build.ArtifactStagingDirectory)\Installers'
+        #         whiteListPathForCerts: $(WhiteListPathForAuthenticodeSign)
         - task: PublishSymbols@2
           displayName: 'Enable Source Server'
           inputs:
