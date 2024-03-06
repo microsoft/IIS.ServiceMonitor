@@ -163,7 +163,7 @@ extends:
         - task: VSBuild@1
           displayName: 'Build x86'
           inputs:
-            solution: ${{ parameters.productMajor }}
+            solution: ${{ parameters.solution }}
             vsVersion: 15.0
             msbuildArgs: $(MsbuildArgs)
             platform: x86
@@ -173,7 +173,7 @@ extends:
         - task: VSBuild@1
           displayName: 'Build x64'
           inputs:
-            solution: ${{ parameters.productMajor }}
+            solution: ${{ parameters.solution }}
             vsVersion: 15.0
             msbuildArgs: $(MsbuildArgs)
             platform: x64
