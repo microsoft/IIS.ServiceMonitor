@@ -37,7 +37,7 @@ parameters:
   default: ' '
 - name: teamName
   type: string
-  default: IIS.ServiceMonitor
+  default: 'IIS.ServiceMonitor'
 - name: codeQLEnabled
   type: string
   default: true
