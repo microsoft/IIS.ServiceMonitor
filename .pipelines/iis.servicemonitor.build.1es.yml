@@ -5,30 +5,39 @@ parameters:
 - name: restoreSolution
   type: string
   default: '**\ServiceMonitor.sln'
+- name: signType
+  type: string
+  default: 'Real'
 - name: productMajor
   type: number
   default: 1
 - name: productMinor
   type: number
   default: 0
-- name: signType
-  type: string
-  default: 'Real'
-  name: indexSourcesAndPublishSymbols
-  type: string
-  default: 'true'
-  name: publishArtifactInstallers
-  type: string
-  default: 'false'  
-  name: publishArtifactSources
-  type: string
-  default: 'false'
-  name: whiteListPathForAuthenticodeSign
-  type: string
-  default: '$(Build.SourcesDirectory)\IIS-Common\.azure\templates\no_authenticode.txt'
-  name: whiteListPathForStrongNameSign
+- name: buildMajor
   type: string
   default: ''
+- name: buildMinor
+  type: string
+  default: $(Build.BuildNumber)  
+- name: indexSourcesAndPublishSymbols
+  type: string
+  default: 'true'
+- name: publishArtifactInstallers
+  type: string
+  default: 'false'  
+- name: publishArtifactSources
+  type: string
+  default: 'false'
+- name: whiteListPathForAuthenticodeSign
+  type: string
+  default: '$(Build.SourcesDirectory)\IIS-Common\.azure\templates\no_authenticode.txt'
+- name: whiteListPathForStrongNameSign
+  type: string
+  default: ''
+- name: teamName
+  type: string
+  default: IIS.ServiceMonitor
 name: $(Rev:rr)
 pr: none
 trigger: none
@@ -42,11 +51,11 @@ resources:
       name: 1ESPipelineTemplates/MicroBuildTemplate
       ref: refs/tags/release
 variables:
-  TeamName: IIS.ServiceMonitor
+  TeamName: ${{ parameters.teamName }}
   ProductMajor: ${{ parameters.productMajor }}
   ProductMinor: ${{ parameters.productMinor }}
-  BuildMajor: ''
-  BuildMinor: $(Build.BuildNumber)
+  BuildMajor: ${{ parameters.buildMajor }}
+  BuildMinor: ${{ parameters.buildMinor }}
   SignType: ${{ parameters.signType }}
   SigningIdentity: 'Microsoft400'
   CodeQL.Enabled: ${{ parameters.codeQLEnabled }}
