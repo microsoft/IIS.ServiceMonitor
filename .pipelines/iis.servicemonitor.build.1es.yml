@@ -38,6 +38,9 @@ parameters:
 - name: teamName
   type: string
   default: IIS.ServiceMonitor
+- name: codeQLEnabled
+  type: string
+  default: true
 name: $(Rev:rr)
 pr: none
 trigger: none
@@ -60,8 +63,7 @@ variables:
   SigningIdentity: 'Microsoft400'
   CodeQL.Enabled: ${{ parameters.codeQLEnabled }}
   msbuildArgs: '/p:RunWixToolsOutOfProc=true'
-- buildConfiguration: Release  
-  codeQLEnabled: true
+  buildConfiguration: Release
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
