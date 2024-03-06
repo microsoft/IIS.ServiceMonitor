@@ -5,30 +5,15 @@ parameters:
 - name: restoreSolution
   type: string
   default: '**\ServiceMonitor.sln'
-- name: buildConfiguration
-  type: string
-  default: 'Release'
 - name: productMajor
   type: number
   default: 1
 - name: productMinor
   type: number
   default: 0
-- name: buildMajor
-  type: string
-  default: ''
-- name: buildMinor
-  type: string
-  default: $(Build.BuildNumber)
 - name: signType
   type: string
   default: 'Real'
-- name: signingIdentity
-  type: string
-  default: 'Microsoft400'
-  name: teamName
-  type: string
-  default: 'IIS'
   name: indexSourcesAndPublishSymbols
   type: string
   default: 'true'
@@ -44,9 +29,6 @@ parameters:
   name: whiteListPathForStrongNameSign
   type: string
   default: ''
-  name: codeQLEnabled
-  type: string
-  default: 'true'
 name: $(Rev:rr)
 pr: none
 trigger: none
@@ -60,15 +42,17 @@ resources:
       name: 1ESPipelineTemplates/MicroBuildTemplate
       ref: refs/tags/release
 variables:
-  TeamName: ${{ parameters.teamName }}
+  TeamName: IIS.ServiceMonitor
   ProductMajor: ${{ parameters.productMajor }}
   ProductMinor: ${{ parameters.productMinor }}
-  BuildMajor: ${{ parameters.buildMajor }}
-  BuildMinor: ${{ parameters.buildMinor }}
+  BuildMajor: ''
+  BuildMinor: $(Build.BuildNumber)
   SignType: ${{ parameters.signType }}
-  SigningIdentity: ${{ parameters.signingIdentity }}
+  SigningIdentity: 'Microsoft400'
   CodeQL.Enabled: ${{ parameters.codeQLEnabled }}
   msbuildArgs: '/p:RunWixToolsOutOfProc=true'
+- buildConfiguration: Release  
+  codeQLEnabled: true
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
@@ -172,7 +156,7 @@ extends:
             vsVersion: 15.0
             msbuildArgs: $(MsbuildArgs)
             platform: x86
-            configuration: ${{ parameters.buildConfiguration }}
+            configuration: $(buildConfiguration)
             clean: true
             msbuildArchitecture: x64
         - task: VSBuild@1
@@ -182,13 +166,13 @@ extends:
             vsVersion: 15.0
             msbuildArgs: $(MsbuildArgs)
             platform: x64
-            configuration: ${{ parameters.buildConfiguration }}
+            configuration: $(buildConfiguration)
             clean: true
             msbuildArchitecture: x64
         - task: CopyFiles@2
           displayName: 'Copy Binaries x86'
           inputs:
-            sourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x86'
+            sourceFolder: '$(Build.SourcesDirectory)\bin\$(buildConfiguration)\x86'
             contents: |
               **\*.dll
               **\*.exe
@@ -196,7 +180,7 @@ extends:
         - task: CopyFiles@2
           displayName: 'Copy Binaries x64'
           inputs:
-            sourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x64'
+            sourceFolder: '$(Build.SourcesDirectory)\bin\$(buildConfiguration)\x64'
             contents: |
               **\*.dll
               **\*.exe
@@ -217,13 +201,13 @@ extends:
           - task: CopyFiles@2
             displayName: 'Copy Installers x86'
             inputs:
-              sourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x86'
+              sourceFolder: '$(Build.SourcesDirectory)\bin\$(buildConfiguration)\x86'
               contents: '**\*.msi'
               targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x86'
           - task: CopyFiles@2
             displayName: 'Copy Installers x64'
             inputs:
-              sourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x64'
+              sourceFolder: '$(Build.SourcesDirectory)\bin\$(buildConfiguration)\x64'
               contents: '**\*.msi'
               targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x64'
         - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
