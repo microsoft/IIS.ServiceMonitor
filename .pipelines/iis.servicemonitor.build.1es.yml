@@ -16,7 +16,7 @@ parameters:
   default: 0
 - name: buildMajor
   type: string
-  default: ''
+  default: ' '
 - name: buildMinor
   type: string
   default: $(Build.BuildNumber)  
@@ -34,7 +34,7 @@ parameters:
   default: '$(Build.SourcesDirectory)\IIS-Common\.azure\templates\no_authenticode.txt'
 - name: whiteListPathForStrongNameSign
   type: string
-  default: ''
+  default: ' '
 - name: teamName
   type: string
   default: IIS.ServiceMonitor
