@@ -1,3 +1,20 @@
+parameters:
+  solution: '**\ServiceMonitor.sln'
+  restoreSolution: '**\ServiceMonitor.sln'
+  buildConfiguration: 'Release'
+  productMajor: 1
+  productMinor: 0
+  buildMajor: ''
+  buildMinor: $(Build.BuildNumber)
+  signType: 'Real'
+  signingIdentity: 'Microsoft400'
+  teamName: 'IIS'
+  indexSourcesAndPublishSymbols: 'true'
+  publishArtifactInstallers: 'false'
+  publishArtifactSources: 'false'
+  whiteListPathForAuthenticodeSign: '$(Build.SourcesDirectory)\IIS-Common\.azure\templates\no_authenticode.txt'
+  whiteListPathForStrongNameSign: ''
+  codeQLEnabled: 'true'
 name: $(Rev:rr)
 pr: none
 trigger: none
@@ -10,25 +27,16 @@ resources:
       type: git
       name: 1ESPipelineTemplates/MicroBuildTemplate
       ref: refs/tags/release
-variables:      
-  Solution: '**\ServiceMonitor.sln'
-  RestoreSolution: '**\ServiceMonitor.sln'
-  ProductMajor: 1
-  ProductMinor: 0
-  BuildMajor: ''
-  BuildMinor: $(Build.BuildNumber)
-  TeamName: 'IIS'
-  SignType: 'Real'
-  SigningIdentity: 'Microsoft400'
-  indexSourcesAndPublishSymbols: 'true'
-  publishArtifactInstallers: 'false'
-  PublishArtifactSources: 'true'
-  WhiteListPathForAuthenticodeSign: '$(Build.SourcesDirectory)\IIS-Common\.azure\templates\no_authenticode.txt'
-  WhiteListPathForStrongNameSign: ''
+variables:
+  TeamName: ${{ parameters.teamName }}
+  ProductMajor: ${{ parameters.productMajor }}
+  ProductMinor: ${{ parameters.productMinor }}
+  BuildMajor: ${{ parameters.buildMajor }}
+  BuildMinor: ${{ parameters.buildMinor }}
+  SignType: ${{ parameters.signType }}
+  SigningIdentity: ${{ parameters.signingIdentity }}
+  CodeQL.Enabled: ${{ parameters.codeQLEnabled }}
   msbuildArgs: '/p:RunWixToolsOutOfProc=true'
-  agentPoolDemandTeam: ''
-  BuildConfiguration: 'Release'
-  CodeQL.Enabled: 'true'
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
@@ -66,15 +74,16 @@ extends:
             displayName: 'Publish Artifact: Symbols'
             targetPath: '$(Build.ArtifactStagingDirectory)\Symbols'
             artifactName: Symbols
-          # - if eq($(publishArtifactInstallers), 'true'):
-          #   - output: pipelineArtifact
-          #     displayName: 'Publish Artifact: Installers'
-          #     targetPath: '$(Build.ArtifactStagingDirectory)\Installers'
-          #     artifactName: Installers
-          - output: pipelineArtifact
-            displayName: 'Publish Artifact: Sources'
-            targetPath: '$(Build.ArtifactStagingDirectory)\Sources'
-            artifactName: Sources
+          - ${{ if eq(parameters.publishArtifactInstallers, 'true') }}:
+            - output: pipelineArtifact
+              displayName: 'Publish Artifact: Installers'
+              targetPath: '$(Build.ArtifactStagingDirectory)\Installers'
+              artifactName: Installers
+          - ${{ if eq(parameters.publishArtifactSources, 'true') }}:              
+            - output: pipelineArtifact
+              displayName: 'Publish Artifact: Sources'
+              targetPath: '$(Build.ArtifactStagingDirectory)\Sources'
+              artifactName: Sources
         steps:
         - checkout: self
           fetchTags: false
@@ -97,7 +106,7 @@ extends:
           displayName: 'NuGet restore'
           inputs:
             command: 'restore'
-            restoreSolution: $(RestoreSolution)
+            restoreSolution: ${{ parameters.restoreSolution }}
             feedsToUse: config
             nugetConfigPath: NuGet.config
         - task: PowerShell@2
@@ -127,27 +136,27 @@ extends:
         - task: VSBuild@1
           displayName: 'Build x86'
           inputs:
-            solution: $(Solution)
+            solution: ${{ parameters.productMajor }}
             vsVersion: 15.0
             msbuildArgs: $(MsbuildArgs)
             platform: x86
-            configuration: $(BuildConfiguration)
+            configuration: ${{ parameters.buildConfiguration }}
             clean: true
             msbuildArchitecture: x64
         - task: VSBuild@1
           displayName: 'Build x64'
           inputs:
-            solution: $(Solution)
+            solution: ${{ parameters.productMajor }}
             vsVersion: 15.0
             msbuildArgs: $(MsbuildArgs)
             platform: x64
-            configuration: $(BuildConfiguration)
+            configuration: ${{ parameters.buildConfiguration }}
             clean: true
             msbuildArchitecture: x64
         - task: CopyFiles@2
           displayName: 'Copy Binaries x86'
           inputs:
-            sourceFolder: '$(Build.SourcesDirectory)\bin\$(BuildConfiguration)\x86'
+            sourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x86'
             contents: |
               **\*.dll
               **\*.exe
@@ -155,7 +164,7 @@ extends:
         - task: CopyFiles@2
           displayName: 'Copy Binaries x64'
           inputs:
-            sourceFolder: '$(Build.SourcesDirectory)\bin\$(BuildConfiguration)\x64'
+            sourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x64'
             contents: |
               **\*.dll
               **\*.exe
@@ -172,34 +181,35 @@ extends:
             sourceFolder: '$(Build.SourcesDirectory)'
             contents: '**\x64\**\*pdb'
             targetFolder: '$(Build.ArtifactStagingDirectory)\Symbols\x64'
-        # - if eq($(publishArtifactInstallers), 'true'):
-        #   - task: CopyFiles@2
-        #     displayName: 'Copy Installers x86'
-        #     inputs:
-        #       sourceFolder: '$(Build.SourcesDirectory)\bin\$(BuildConfiguration)\x86'
-        #       contents: '**\*.msi'
-        #       targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x86'
-        #   - task: CopyFiles@2
-        #     displayName: 'Copy Installers x64'
-        #     inputs:
-        #       sourceFolder: '$(Build.SourcesDirectory)\bin\$(BuildConfiguration)\x64'
-        #       contents: '**\*.msi'
-        #       targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x64'
+        - ${{ if eq(parameters.publishArtifactInstallers, 'true') }}:
+          - task: CopyFiles@2
+            displayName: 'Copy Installers x86'
+            inputs:
+              sourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x86'
+              contents: '**\*.msi'
+              targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x86'
+          - task: CopyFiles@2
+            displayName: 'Copy Installers x64'
+            inputs:
+              sourceFolder: '$(Build.SourcesDirectory)\bin\${{ parameters.buildConfiguration }}\x64'
+              contents: '**\*.msi'
+              targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x64'
         - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
           displayName: 'Verify Signed Binaries'
           inputs:
             targetFolders: '$(Build.ArtifactStagingDirectory)\Binaries'
-            whiteListPathForCerts: $(WhiteListPathForAuthenticodeSign)
-            whiteListPathForSigs: $(WhiteListPathForStrongNameSign)
-        # - if eq($(publishArtifactInstallers), 'true'):
-        #     - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
-        #       displayName: 'Verify Signed Installers'
-        #       inputs:
-        #         targetFolders: '$(Build.ArtifactStagingDirectory)\Installers'
-        #         whiteListPathForCerts: $(WhiteListPathForAuthenticodeSign)
-        - task: PublishSymbols@2
-          displayName: 'Enable Source Server'
-          inputs:
-            symbolsFolder: '$(Build.ArtifactStagingDirectory)\Symbols'
-            searchPattern: '**\*.pdb'
-            symbolServerType: TeamServices
+            whiteListPathForCerts: ${{ parameters.whiteListPathForAuthenticodeSign }}
+            whiteListPathForSigs: ${{ parameters.whiteListPathForStrongNameSign }}
+        - ${{ if eq(parameters.publishArtifactInstallers, 'true') }}:
+          - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
+            displayName: 'Verify Signed Installers'
+            inputs:
+              targetFolders: '$(Build.ArtifactStagingDirectory)\Installers'
+              whiteListPathForCerts: ${{ parameters.whiteListPathForAuthenticodeSign }}
+        - ${{ if eq(parameters.indexSourcesAndPublishSymbols, 'true') }}:                
+          - task: PublishSymbols@2
+            displayName: 'Enable Source Server'
+            inputs:
+              symbolsFolder: '$(Build.ArtifactStagingDirectory)\Symbols'
+              searchPattern: '**\*.pdb'
+              symbolServerType: TeamServices
