@@ -234,9 +234,9 @@ extends:
               targetFolders: '$(Build.ArtifactStagingDirectory)\Installers'
               whiteListPathForCerts: ${{ parameters.whiteListPathForAuthenticodeSign }}
         - ${{ if eq(parameters.indexSourcesAndPublishSymbols, 'true') }}:                
-          - task: PublishSymbols@2
-            displayName: 'Enable Source Server'
+          - task: MicroBuildArchiveSymbols@5
+            displayName: 'Upload Symbols'
             inputs:
-              symbolsFolder: '$(Build.ArtifactStagingDirectory)\Symbols'
-              searchPattern: '**\*.pdb'
-              symbolServerType: TeamServices
+              SymbolsFeatureName: 'ServiceMonitor'
+              SymbolsProject: 'IIS'
+              SymbolsAgentPath: '$(Build.ArtifactStagingDirectory)\symbols'
