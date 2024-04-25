@@ -237,6 +237,6 @@ extends:
           - task: MicroBuildArchiveSymbols@5
             displayName: 'Upload Symbols'
             inputs:
-              SymbolsFeatureName: 'IIS.ServiceMonitor'
-              SymbolsProject: 'VS'
+              SymbolsFeatureName: 'ServiceMonitor'
+              SymbolsProject: 'IIS'
               SymbolsAgentPath: '$(Build.ArtifactStagingDirectory)\symbols'
