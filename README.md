@@ -57,6 +57,34 @@ for those Environment variable / value pairs present in this list below.
 ## Usage
 
 ```
+ServiceMonitor.exe [<windows_service_name> [application_pool]] [-st <service_timeout>] [-at <appcmd_timeout>]
+```
+
+|Placeholder|Description|
+|---|---|
+|`windows_service_name`|Name of the Windows service to monitor|
+|`application_pool`|Name of the application pool to monitor; defaults to DefaultAppPool|
+|`service_timeout`|The time (in seconds) it is willing to wait for the service to start or stop|
+|`appcmd_timeout`|The time (in seconds) it is willing to wait for the appcmd command to execute|
+
+### Examples
+
+```
+ServiceMonitor.exe
+```
+```
+ServiceMonitor.exe -st 60
+```
+```
+ServiceMonitor.exe w3svc ApplicationPool
+```
+```
+ServiceMonitor.exe -at 30
+```
+```
+ServiceMonitor.exe w3svc MyAppPool -st 60 -at 30
+```
+```
 .\ServiceMonitor.exe w3svc
 ```
 

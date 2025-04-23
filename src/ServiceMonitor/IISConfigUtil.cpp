@@ -199,7 +199,7 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(const vector<pair<wstring, wstring>>& 
 }
 
 
-HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError)
+HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError, int appcmdTimeoutSeconds)
 {
     HRESULT     hr       = S_OK;
     STARTUPINFO si       = { sizeof(STARTUPINFO) };
@@ -226,9 +226,9 @@ HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError)
     }
 
     //
-    // wait for at most 5 seconds to allow APPCMD finish
+    // wait to allow APPCMD finish (default is 5 seconds)
     //
-    WaitForSingleObject(pi.hProcess, 5000);
+    WaitForSingleObject(pi.hProcess, appcmdTimeoutSeconds * 1000);
     if ((!GetExitCodeProcess(pi.hProcess, &dwStatus) || dwStatus != 0) && (!fIgnoreError))
     {
         //
@@ -246,7 +246,7 @@ Finished:
     return hr;
 }
 
-HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
+HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName, int appcmdTimeoutSeconds)
 {
     HRESULT  hr           = S_OK;
     LPTCH    lpvEnv       = NULL;
@@ -293,7 +293,6 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
             envVec.emplace_back(wstring(pstrName), wstring(pstrValue));
 
             pEqualChar[0] = L'=';
-
         }
         //
         // move to next environment variable
@@ -304,7 +303,6 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
     envVecIter = envVec.begin();
     while (fMoreData)
     {
-
         pstrRmCmd.clear();
         fMoreData = FALSE;
         hr = BuildAppCmdCommand(envVec, envVecIter, pstrAppPoolName, pstrRmCmd, APPCMD_RM);
@@ -323,7 +321,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
         //
         //allow appcmd to fail if it is trying to remove environment variable
         //
-        RunCommand(pstrRmCmd, TRUE);
+        RunCommand(pstrRmCmd, TRUE, appcmdTimeoutSeconds);
     }
 
     fMoreData = TRUE;
@@ -348,7 +346,7 @@ HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName)
         //
         //appcmd must succeed when add new environment variables
         //
-        hr = RunCommand(pstrAddCmd, FALSE);
+        hr = RunCommand(pstrAddCmd, FALSE, appcmdTimeoutSeconds);
 
         if (FAILED(hr))
         {
