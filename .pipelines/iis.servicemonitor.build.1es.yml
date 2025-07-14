@@ -5,9 +5,6 @@ parameters:
 - name: restoreSolution
   type: string
   default: '**\ServiceMonitor.sln'
-- name: signType
-  type: string
-  default: 'Real'
 - name: productMajor
   type: number
   default: 1
@@ -59,7 +56,6 @@ variables:
   ProductMinor: ${{ parameters.productMinor }}
   BuildMajor: ${{ parameters.buildMajor }}
   BuildMinor: ${{ parameters.buildMinor }}
-  SignType: ${{ parameters.signType }}
   SigningIdentity: 'Microsoft400'
   CodeQL.Enabled: ${{ parameters.codeQLEnabled }}
   msbuildArgs: '/p:RunWixToolsOutOfProc=true'
@@ -91,7 +87,11 @@ extends:
           mb:
             signing:
               enabled: true
-              signType: $(SignType)
+              ${{ if eq(variables['Build.Reason'], 'IndividualCI') }}:
+                signType: real
+                signWithProd: true
+              ${{ else }}:
+                signType: test
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish Artifact: Binaries'
