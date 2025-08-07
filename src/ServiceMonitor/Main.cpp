@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-#include"stdafx.h"
+#include "stdafx.h"
 #include "Version.h"
 
 HANDLE g_hStopEvent = INVALID_HANDLE_VALUE;
@@ -27,12 +27,12 @@ BOOL WINAPI CtrlHandle(DWORD dwCtrlType)
     return TRUE;
 }
 
-bool isNumber(LPCTSTR strpointer) {
+bool isNumber(LPCWSTR strpointer) {
 
     int index;
 
     for (index = 0; index < wcslen(strpointer); index++) {
-        if ((strpointer[index] < 48) || (strpointer[index] > 57)) {
+        if (iswdigit(strpointer[index]) == false) {
             return false;
         }
     }
@@ -50,7 +50,7 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
     bool invalidSyntax = false;
     int nextPositionalArgument = 1;
 
-    TCHAR buffDrive[3], buffDirName[1024], buffFileName[1024], buffExt[25];
+    WCHAR buffDrive[3], buffDirName[1024], buffFileName[1024], buffExt[25];
     _wsplitpath_s(argv[0], buffDrive, 3, buffDirName, 1024, buffFileName, 1024, buffExt, 25);
 
     WCHAR fileName[1024];
@@ -65,30 +65,43 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
             (_wcsicmp(argv[argIndex], L"-?") == 0) ||
             (_wcsicmp(argv[argIndex], L"/?") == 0) ||
             (_wcsicmp(argv[argIndex], L"--help") == 0)
-        )) {
+            )) {
             invalidSyntax = true;
             break;
-        } else if (_wcsicmp(argv[argIndex], L"-st") == 0) {
-            if (isNumber(argv[argIndex + 1])) {
+        }
+        else if (_wcsicmp(argv[argIndex], L"-st") == 0) {
+            if (argIndex + 1 >= argc) {
+                invalidSyntax = true;
+            }
+            else if (isNumber(argv[argIndex + 1])) {
                 serviceTimeout = _wtoi(argv[argIndex + 1]);
                 argIndex++;
-            } else {
+            }
+            else {
                 invalidSyntax = true;
             }
-        } else if (_wcsicmp(argv[argIndex], L"-at") == 0) {
-            if (isNumber(argv[argIndex + 1])) {
+        }
+        else if (_wcsicmp(argv[argIndex], L"-at") == 0) {
+            if (argIndex + 1 >= argc) {
+                invalidSyntax = true;
+            }
+            else if (isNumber(argv[argIndex + 1])) {
                 appcmdTimeout = _wtoi(argv[argIndex + 1]);
                 argIndex++;
-            } else {
+            }
+            else {
                 invalidSyntax = true;
             }
-        } else if (nextPositionalArgument == 1) {
+        }
+        else if (nextPositionalArgument == 1) {
             pstrServiceName = argv[argIndex];
             nextPositionalArgument++;
-        } else if (nextPositionalArgument == 2) {
+        }
+        else if (nextPositionalArgument == 2) {
             pstrAppPoolName = argv[argIndex];
             nextPositionalArgument++;
-        } else {
+        }
+        else {
             invalidSyntax = true;
         }
     }
