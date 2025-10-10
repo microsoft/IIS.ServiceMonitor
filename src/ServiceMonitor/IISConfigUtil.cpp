@@ -199,7 +199,7 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(const vector<pair<wstring, wstring>>& 
 }
 
 
-HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError, int appcmdTimeoutSeconds)
+HRESULT IISConfigUtil::RunCommand(wstring& pstrCmd, BOOL fIgnoreError, DWORD appcmdTimeoutSeconds)
 {
     HRESULT     hr       = S_OK;
     STARTUPINFO si       = { sizeof(STARTUPINFO) };
@@ -246,7 +246,7 @@ Finished:
     return hr;
 }
 
-HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName, int appcmdTimeoutSeconds)
+HRESULT IISConfigUtil::UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName, DWORD appcmdTimeoutSeconds)
 {
     HRESULT  hr           = S_OK;
     LPTCH    lpvEnv       = NULL;

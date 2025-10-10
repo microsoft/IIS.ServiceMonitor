@@ -19,10 +19,10 @@ public:
     IISConfigUtil();
     ~IISConfigUtil();
     HRESULT Initialize();
-    HRESULT UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName, int appcmdTimeoutSeconds);
+    HRESULT UpdateEnvironmentVarsToConfig(WCHAR* pstrAppPoolName, DWORD appcmdTimeoutSeconds);
 
 private:
-    HRESULT RunCommand(std::wstring& pstrCmd, BOOL fIgnoreError, int appcmdTimeoutSeconds);
+    HRESULT RunCommand(std::wstring& pstrCmd, BOOL fIgnoreError, DWORD appcmdTimeoutSeconds);
     void    Replace(std::wstring& str, std::wstring oldValue, std::wstring newValue);
     HRESULT BuildAppCmdCommand(const std::vector<std::pair<std::wstring, std::wstring>>& vecSet, std::vector<std::pair<std::wstring, std::wstring>>::iterator& envVecIter, WCHAR* pstrAppPoolName, std::wstring& pStrCmd, APPCMD_CMD_TYPE appcmdType);
     BOOL    FilterEnv(const std::unordered_map<std::wstring, LPTSTR>& filter, LPCTSTR strEnvName, LPCTSTR strEnvValue);

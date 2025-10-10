@@ -45,8 +45,8 @@ int __cdecl _tmain(int argc, _TCHAR* argv[])
     HRESULT hr = S_OK;
     Service_Monitor sm = Service_Monitor();
     int argIndex;
-    int serviceTimeout = 20; //default value - in seconds
-    int appcmdTimeout = 5; //default value - in seconds
+    DWORD serviceTimeout = 20; //default value - in seconds
+    DWORD appcmdTimeout = 5; //default value - in seconds
     bool invalidSyntax = false;
     int nextPositionalArgument = 1;
 
