@@ -67,7 +67,7 @@ HRESULT Service_Monitor::StartServiceByName(LPCTSTR pServiceName, DWORD dwTimeOu
         //
         // Query service status to make sure service is in running state
         //
-        while(dwRemainTime >0)
+        while (dwRemainTime > 0)
         {
             DWORD     dwBytes = 0;
             SERVICE_STATUS_PROCESS sStatus;
@@ -109,7 +109,7 @@ HRESULT Service_Monitor::StartServiceByName(LPCTSTR pServiceName, DWORD dwTimeOu
     }
 
     Finished:
-    if(SUCCEEDED(hr))
+    if (SUCCEEDED(hr))
     {
         _tprintf(L"\n Service '%s' started \n", pServiceName);
     }
@@ -211,7 +211,7 @@ HRESULT Service_Monitor::MonitoringService(LPCTSTR pServiceName, DWORD dwStatus,
     SERVICE_NOTIFY sNotify;
 
     hr = GetServiceHandle(pServiceName, &hService);
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         goto Finished;
     }
