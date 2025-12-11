@@ -40,7 +40,11 @@ parameters:
   default: true
 name: $(Rev:rr)
 pr: none
-trigger: none
+trigger:
+  branches:
+    include:
+    - refs/heads/main
+  batch: true
 resources:
   repositories:
     - repository: self
@@ -87,11 +91,12 @@ extends:
           mb:
             signing:
               enabled: true
-              ${{ if eq(variables['Build.Reason'], 'IndividualCI') }}:
+              ${{ if or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI')) }}:
                 signType: real
                 signWithProd: true
               ${{ else }}:
                 signType: test
+              zipSources: false
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish Artifact: Binaries'
