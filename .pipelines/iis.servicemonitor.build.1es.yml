@@ -1,0 +1,242 @@
+parameters:
+- name: solution
+  type: string
+  default: '**\ServiceMonitor.sln'
+- name: restoreSolution
+  type: string
+  default: '**\ServiceMonitor.sln'
+- name: productMajor
+  type: number
+  default: 1
+- name: productMinor
+  type: number
+  default: 0
+- name: buildMajor
+  type: string
+  default: ' '
+- name: buildMinor
+  type: string
+  default: $(Build.BuildNumber)  
+- name: indexSourcesAndPublishSymbols
+  type: string
+  default: 'true'
+- name: publishArtifactInstallers
+  type: string
+  default: 'false'  
+- name: publishArtifactSources
+  type: string
+  default: 'false'
+- name: whiteListPathForAuthenticodeSign
+  type: string
+  default: '$(Build.SourcesDirectory)\IIS-Common\.azure\templates\no_authenticode.txt'
+- name: whiteListPathForStrongNameSign
+  type: string
+  default: ' '
+- name: teamName
+  type: string
+  default: 'IIS.ServiceMonitor'
+- name: codeQLEnabled
+  type: string
+  default: true
+name: $(Rev:rr)
+pr: none
+trigger: none
+resources:
+  repositories:
+    - repository: self
+      type: git
+      ref: refs/heads/main
+    - repository: MicroBuildTemplate
+      type: git
+      name: 1ESPipelineTemplates/MicroBuildTemplate
+      ref: refs/tags/release
+variables:
+  TeamName: ${{ parameters.teamName }}
+  ProductMajor: ${{ parameters.productMajor }}
+  ProductMinor: ${{ parameters.productMinor }}
+  BuildMajor: ${{ parameters.buildMajor }}
+  BuildMinor: ${{ parameters.buildMinor }}
+  SigningIdentity: 'Microsoft400'
+  CodeQL.Enabled: ${{ parameters.codeQLEnabled }}
+  msbuildArgs: '/p:RunWixToolsOutOfProc=true'
+  buildConfiguration: Release
+extends:
+  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
+  parameters:
+    sdl:
+      sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
+    pool:
+      name: AzurePipelines-EO
+      image: AzurePipelinesWindows2022compliantGPT
+      os: windows
+    customBuildTags:
+    - ES365AIMigrationTooling
+    stages:
+    - stage: stage
+      jobs:
+      - job: Phase_1
+        displayName: Build
+        timeoutInMinutes: 0
+        cancelTimeoutInMinutes: 1
+        pool:
+          name: VSEngSS-MicroBuild2022-1ES
+          demands:
+          - MSBuild_15.0_x64
+          - MSBuild_15.0
+        templateContext:
+          mb:
+            signing:
+              enabled: true
+              ${{ if eq(variables['Build.Reason'], 'IndividualCI') }}:
+                signType: real
+                signWithProd: true
+              ${{ else }}:
+                signType: test
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish Artifact: Binaries'
+            targetPath: '$(Build.ArtifactStagingDirectory)\Binaries'
+            artifactName: Binaries
+          - output: pipelineArtifact
+            displayName: 'Publish Artifact: Symbols'
+            targetPath: '$(Build.ArtifactStagingDirectory)\Symbols'
+            artifactName: Symbols
+          - ${{ if eq(parameters.publishArtifactInstallers, 'true') }}:
+            - output: pipelineArtifact
+              displayName: 'Publish Artifact: Installers'
+              targetPath: '$(Build.ArtifactStagingDirectory)\Installers'
+              artifactName: Installers
+          - ${{ if eq(parameters.publishArtifactSources, 'true') }}:              
+            - output: pipelineArtifact
+              displayName: 'Publish Artifact: Sources'
+              targetPath: '$(Build.ArtifactStagingDirectory)\Sources'
+              artifactName: Sources
+        steps:
+        - checkout: self
+          fetchTags: false
+          persistCredentials: True
+          clean: true
+          submodules: recursive
+        - task: CopyFiles@2
+          displayName: 'Copy Sources'
+          inputs:
+            sourceFolder: '$(Build.SourcesDirectory)'
+            contents: |
+              **
+              !.git\**\*
+            targetFolder: '$(Build.ArtifactStagingDirectory)\Sources'
+        - task: NuGetToolInstaller@1
+          displayName: 'Install NuGet Tool'
+          inputs:
+            versionSpec: '>=4.7.1'
+        - task: NuGetCommand@2
+          displayName: 'NuGet restore'
+          inputs:
+            command: 'restore'
+            restoreSolution: ${{ parameters.restoreSolution }}
+            feedsToUse: config
+            nugetConfigPath: NuGet.config
+        - task: PowerShell@2
+          displayName: 'Process Msbuild Arguments'
+          inputs:
+            targetType: inline
+            script: |
+              $MsbuildArgsDict =
+              @{
+                    "PRODUCT_MAJOR" = $env:PRODUCTMAJOR;
+                    "PRODUCT_MINOR" = $env:PRODUCTMINOR;
+                    "BUILD_MAJOR" = $env:BUILDMAJOR;
+                    "BUILD_MINOR" = $env:BUILDMINOR;
+                    "SignType" = $env:SIGNTYPE;
+                    "SigningIdentity" = $env:SIGNINGIDENTITY;
+              };
+              $MsbuildArgs = ""
+              foreach ($key in $MsbuildArgsDict.Keys)
+              {
+                    if (![string]::IsNullOrEmpty($MsbuildArgsDict[$key]))
+                    {
+                        $MsbuildArgs += "/p:$($key)=$($MsbuildArgsDict[$key]) "
+                    }
+              }
+              Write-Host "$("##vso[task.setvariable variable=MsbuildArgs]") $($MsbuildArgs)"
+              Write-Host "MsbuildArgs: $($MsbuildArgs)"
+        - task: VSBuild@1
+          displayName: 'Build x86'
+          inputs:
+            solution: ${{ parameters.solution }}
+            vsVersion: 15.0
+            msbuildArgs: $(MsbuildArgs)
+            platform: x86
+            configuration: $(buildConfiguration)
+            clean: true
+            msbuildArchitecture: x64
+        - task: VSBuild@1
+          displayName: 'Build x64'
+          inputs:
+            solution: ${{ parameters.solution }}
+            vsVersion: 15.0
+            msbuildArgs: $(MsbuildArgs)
+            platform: x64
+            configuration: $(buildConfiguration)
+            clean: true
+            msbuildArchitecture: x64
+        - task: CopyFiles@2
+          displayName: 'Copy Binaries x86'
+          inputs:
+            sourceFolder: '$(Build.SourcesDirectory)\bin\$(buildConfiguration)\x86'
+            contents: |
+              **\*.dll
+              **\*.exe
+            targetFolder: '$(Build.ArtifactStagingDirectory)\Binaries\x86'
+        - task: CopyFiles@2
+          displayName: 'Copy Binaries x64'
+          inputs:
+            sourceFolder: '$(Build.SourcesDirectory)\bin\$(buildConfiguration)\x64'
+            contents: |
+              **\*.dll
+              **\*.exe
+            targetFolder: '$(Build.ArtifactStagingDirectory)\Binaries\x64'
+        - task: CopyFiles@2
+          displayName: 'Copy Symbols x86'
+          inputs:
+            sourceFolder: '$(Build.SourcesDirectory)'
+            contents: '**\x86\**\*.pdb'
+            targetFolder: '$(Build.ArtifactStagingDirectory)\Symbols\x86'
+        - task: CopyFiles@2
+          displayName: 'Copy Symbols x64'
+          inputs:
+            sourceFolder: '$(Build.SourcesDirectory)'
+            contents: '**\x64\**\*pdb'
+            targetFolder: '$(Build.ArtifactStagingDirectory)\Symbols\x64'
+        - ${{ if eq(parameters.publishArtifactInstallers, 'true') }}:
+          - task: CopyFiles@2
+            displayName: 'Copy Installers x86'
+            inputs:
+              sourceFolder: '$(Build.SourcesDirectory)\bin\$(buildConfiguration)\x86'
+              contents: '**\*.msi'
+              targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x86'
+          - task: CopyFiles@2
+            displayName: 'Copy Installers x64'
+            inputs:
+              sourceFolder: '$(Build.SourcesDirectory)\bin\$(buildConfiguration)\x64'
+              contents: '**\*.msi'
+              targetFolder: '$(Build.ArtifactStagingDirectory)\Installers\x64'
+        - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
+          displayName: 'Verify Signed Binaries'
+          inputs:
+            targetFolders: '$(Build.ArtifactStagingDirectory)\Binaries'
+            whiteListPathForCerts: ${{ parameters.whiteListPathForAuthenticodeSign }}
+            whiteListPathForSigs: ${{ parameters.whiteListPathForStrongNameSign }}
+        - ${{ if eq(parameters.publishArtifactInstallers, 'true') }}:
+          - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@2
+            displayName: 'Verify Signed Installers'
+            inputs:
+              targetFolders: '$(Build.ArtifactStagingDirectory)\Installers'
+              whiteListPathForCerts: ${{ parameters.whiteListPathForAuthenticodeSign }}
+        - ${{ if eq(parameters.indexSourcesAndPublishSymbols, 'true') }}:                
+          - task: PublishSymbols@2
+            displayName: 'Enable Source Server'
+            inputs:
+              symbolsFolder: '$(Build.ArtifactStagingDirectory)\Symbols'
+              searchPattern: '**\*.pdb'
+              symbolServerType: TeamServices
