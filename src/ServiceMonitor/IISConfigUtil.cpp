@@ -163,6 +163,11 @@ HRESULT IISConfigUtil::BuildAppCmdCommand(const vector<pair<wstring, wstring>>& 
         Replace(strEnvName, L"\"", L"\"\"\"");
         Replace(strEnvValue, L"'", L"''");
         Replace(strEnvValue, L"\"", L"\"\"\"");
+        
+        //
+        // Handle values with a % sign, appcmd interprets these as hex characters
+        //
+        Replace(strEnvValue, L"%", L"%25");
 
         if ((pStrCmd.length() + strEnvName.length() + strEnvValue.length()) > APPCMD_MAX_SIZE)
         {
